@@ -5,7 +5,7 @@ interface User {
   id: string;
   username: string;
   email: string;
-  role: 'gamer' | 'community_admin' | 'p_host';
+  role: 'gamer' | 'community_admin' | 'p_host' | 'owner';
   avatar?: string;
   gameIds: Record<string, string>;
   followers: number;
@@ -20,6 +20,7 @@ interface AuthContextType {
   signup: (email: string, password: string, username: string) => Promise<void>;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
+  assignRole: (identifier: string, role: 'community_admin' | 'p_host') => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,7 +42,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Mock login - different users based on email for testing
     let mockUser: User;
     
-    if (email.includes('admin')) {
+    if (email.includes('owner')) {
+      mockUser = {
+        id: '0',
+        username: 'ClutchOwner',
+        email,
+        role: 'owner',
+        avatar: '/placeholder.svg',
+        gameIds: {},
+        followers: 0,
+        following: 0,
+        walletBalance: 999999
+      };
+    } else if (email.includes('admin')) {
       mockUser = {
         id: '2',
         username: 'TourneyMaster',
@@ -113,8 +126,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const assignRole = async (identifier: string, role: 'community_admin' | 'p_host'): Promise<boolean> => {
+    // Mock role assignment - in real app this would update the database
+    // For now, just simulate success
+    console.log(`Assigning role ${role} to ${identifier}`);
+    return true;
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout, updateUser, assignRole }}>
       {children}
     </AuthContext.Provider>
   );

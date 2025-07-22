@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 interface BottomNavigationProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  userRole: 'gamer' | 'community_admin' | 'p_host';
+  userRole: 'gamer' | 'community_admin' | 'p_host' | 'owner';
 }
 
 const BottomNavigation = ({ activeTab, onTabChange, userRole }: BottomNavigationProps) => {

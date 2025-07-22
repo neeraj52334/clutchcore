@@ -13,6 +13,7 @@ import WalletScreen from './screens/WalletScreen';
 import PHostRequestsScreen from './screens/PHostRequestsScreen';
 import UserProfileScreen from './screens/UserProfileScreen';
 import FollowListScreen from './screens/FollowListScreen';
+import OwnerDashboard from './screens/OwnerDashboard';
 
 
 const MainApp = () => {
@@ -91,6 +92,11 @@ const MainApp = () => {
   };
 
   const renderScreen = () => {
+    // Owner Dashboard - full screen replacement
+    if (user?.role === 'owner' && activeTab === 'profile') {
+      return <OwnerDashboard />;
+    }
+
     switch (currentScreen) {
       case 'messages':
         return <MessagesScreen onBack={() => setCurrentScreen('main')} />;
@@ -146,20 +152,26 @@ const MainApp = () => {
   return (
     <ChallengeProvider>
       <div className="min-h-screen bg-gray-900 text-white">
-        <TopNavigation 
-          onMessagesClick={() => setCurrentScreen('messages')}
-          onWalletClick={() => setCurrentScreen('wallet')}
-        />
+        {/* Hide top navigation for owner dashboard */}
+        {!(user?.role === 'owner' && activeTab === 'profile') && (
+          <TopNavigation 
+            onMessagesClick={() => setCurrentScreen('messages')}
+            onWalletClick={() => setCurrentScreen('wallet')}
+          />
+        )}
         
-        <main className="pb-20 pt-16">
+        <main className={`${!(user?.role === 'owner' && activeTab === 'profile') ? 'pb-20 pt-16' : ''}`}>
           {renderScreen()}
         </main>
 
-        <BottomNavigation 
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          userRole={user?.role || 'gamer'}
-        />
+        {/* Hide bottom navigation for owner dashboard */}
+        {!(user?.role === 'owner' && activeTab === 'profile') && (
+          <BottomNavigation 
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            userRole={user?.role || 'gamer'}
+          />
+        )}
       </div>
     </ChallengeProvider>
   );
