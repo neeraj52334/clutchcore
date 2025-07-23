@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Crown, Users, Shield, Settings, ArrowLeft, Plus, Search, Check, X } from 'lucide-react';
+import { Crown, Users, Shield, Settings, ArrowLeft, Plus, Search, Check, X, LogOut } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -20,6 +21,7 @@ interface RoleAssignment {
 }
 
 const OwnerDashboard = ({ onBack }: OwnerDashboardProps) => {
+  const { logout } = useAuth();
   const [activeTab, setActiveTab] = useState<'overview' | 'roles' | 'users'>('overview');
   const [showRoleAssignment, setShowRoleAssignment] = useState(false);
   const [roleForm, setRoleForm] = useState({
@@ -277,6 +279,14 @@ const OwnerDashboard = ({ onBack }: OwnerDashboardProps) => {
                     className="pl-10 bg-gray-700 border-gray-600 text-white"
                   />
                 </div>
+                <Button 
+                  onClick={logout}
+                  variant="outline"
+                  className="flex items-center space-x-2 border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span>Logout</span>
+                </Button>
               </div>
             </div>
 
