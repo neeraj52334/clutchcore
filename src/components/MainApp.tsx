@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { ChallengeProvider } from '../contexts/ChallengeContext';
+import { TournamentProvider } from '../contexts/TournamentContext';
 import TopNavigation from './navigation/TopNavigation';
 import BottomNavigation from './navigation/BottomNavigation';
 import HomeScreen from './screens/HomeScreen';
@@ -14,6 +15,7 @@ import PHostRequestsScreen from './screens/PHostRequestsScreen';
 import UserProfileScreen from './screens/UserProfileScreen';
 import FollowListScreen from './screens/FollowListScreen';
 import OwnerDashboard from './screens/OwnerDashboard';
+import TournamentScreen from './screens/TournamentScreen';
 
 
 const MainApp = () => {
@@ -134,6 +136,8 @@ const MainApp = () => {
             return <SearchScreen onUserClick={handleUserClick} />;
           case 'compete':
             return <CompeteScreen />;
+          case 'tournaments':
+            return <TournamentScreen />;
           case 'profile':
             return (
               <ProfileScreen
@@ -151,7 +155,8 @@ const MainApp = () => {
 
   return (
     <ChallengeProvider>
-      <div className="min-h-screen bg-gray-900 text-white">
+      <TournamentProvider>
+        <div className="min-h-screen bg-gray-900 text-white">
         {/* Hide top navigation for owner dashboard */}
         {!(user?.role === 'owner' && activeTab === 'profile') && (
           <TopNavigation 
@@ -172,7 +177,8 @@ const MainApp = () => {
             userRole={user?.role || 'gamer'}
           />
         )}
-      </div>
+        </div>
+      </TournamentProvider>
     </ChallengeProvider>
   );
 };

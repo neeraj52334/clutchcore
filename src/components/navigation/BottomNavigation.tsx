@@ -1,5 +1,5 @@
 
-import { Home, Search, Swords, User, FileText } from 'lucide-react';
+import { Home, Search, Swords, User, FileText, Trophy } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface BottomNavigationProps {
@@ -13,6 +13,7 @@ const BottomNavigation = ({ activeTab, onTabChange, userRole }: BottomNavigation
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'search', icon: Search, label: 'Search' },
     { id: 'compete', icon: Swords, label: 'Compete' },
+    { id: 'tournaments', icon: Trophy, label: 'Tournaments' },
     { id: 'profile', icon: User, label: 'Profile' },
   ];
 
