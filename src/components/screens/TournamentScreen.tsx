@@ -121,7 +121,7 @@ const TournamentScreen = () => {
           <div>
             <h1 className="text-3xl font-bold text-white flex items-center">
               <Trophy className="w-8 h-8 mr-3 text-yellow-500" />
-              Tournaments
+              Championship
             </h1>
             <p className="text-gray-300 mt-1">Compete in organized tournaments and win prizes</p>
           </div>
