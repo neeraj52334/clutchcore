@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { ChallengeProvider } from '../contexts/ChallengeContext';
 import { TournamentProvider } from '../contexts/TournamentContext';
+import { Toaster } from '../components/ui/toaster';
 import TopNavigation from './navigation/TopNavigation';
 import BottomNavigation from './navigation/BottomNavigation';
 import HomeScreen from './screens/HomeScreen';
@@ -176,8 +177,9 @@ const MainApp = () => {
             onTabChange={setActiveTab}
             userRole={user?.role || 'gamer'}
           />
-        )}
+         )}
         </div>
+        <Toaster />
       </TournamentProvider>
     </ChallengeProvider>
   );

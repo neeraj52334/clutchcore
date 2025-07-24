@@ -72,6 +72,7 @@ interface TournamentContextType {
   getUserTournaments: (username: string) => Tournament[];
   createGroups: (tournamentId: string) => void;
   updateMatchResult: (tournamentId: string, matchId: string, results: TeamResult[]) => void;
+  addDemoTeams: (tournamentId: string) => void;
 }
 
 const TournamentContext = createContext<TournamentContextType | undefined>(undefined);
@@ -250,6 +251,30 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
     }));
   };
 
+  const addDemoTeams = (tournamentId: string) => {
+    const tournament = tournaments.find(t => t.id === tournamentId);
+    if (!tournament) return;
+
+    const slotsToFill = tournament.totalSlots - tournament.registeredTeams.length;
+    const demoTeams: TournamentTeam[] = [];
+
+    for (let i = 0; i < slotsToFill; i++) {
+      demoTeams.push({
+        id: `demo_team_${i + 1}`,
+        name: `Demo Team ${i + 1}`,
+        captain: `Captain${i + 1}`,
+        members: [`Captain${i + 1}`, `Player${i + 1}A`, `Player${i + 1}B`, `Player${i + 1}C`],
+        registeredAt: new Date().toISOString()
+      });
+    }
+
+    setTournaments(prev => prev.map(tournament => 
+      tournament.id === tournamentId 
+        ? { ...tournament, registeredTeams: [...tournament.registeredTeams, ...demoTeams] }
+        : tournament
+    ));
+  };
+
   return (
     <TournamentContext.Provider value={{
       tournaments,
@@ -259,7 +284,8 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
       getActiveTournaments,
       getUserTournaments,
       createGroups,
-      updateMatchResult
+      updateMatchResult,
+      addDemoTeams
     }}>
       {children}
     </TournamentContext.Provider>

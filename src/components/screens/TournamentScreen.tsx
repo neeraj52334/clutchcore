@@ -7,12 +7,14 @@ import { Badge } from '../ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { useTournaments } from '../../contexts/TournamentContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../hooks/use-toast';
 import TournamentCreation from './TournamentCreation';
 import TournamentDetails from './TournamentDetails';
 
 const TournamentScreen = () => {
-  const { tournaments } = useTournaments();
+  const { tournaments, registerTeam, addDemoTeams } = useTournaments();
   const { user } = useAuth();
+  const { toast } = useToast();
   const [currentView, setCurrentView] = useState<'list' | 'create' | 'details'>('list');
   const [selectedTournament, setSelectedTournament] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -78,6 +80,39 @@ const TournamentScreen = () => {
     );
   }
 
+  const handleRegisterTeam = (tournamentId: string) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to register for tournaments",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const team = {
+      id: `team_${Date.now()}`,
+      name: `${user.username}'s Team`,
+      captain: user.username,
+      members: [user.username],
+      registeredAt: new Date().toISOString()
+    };
+
+    registerTeam(tournamentId, team);
+    toast({
+      title: "Registration Successful!",
+      description: `You've been registered for the tournament`,
+    });
+  };
+
+  const handleAddDemoTeams = (tournamentId: string) => {
+    addDemoTeams(tournamentId);
+    toast({
+      title: "Demo Teams Added",
+      description: "Tournament filled with demo teams to test bracket system",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-violet-900 p-4">
       <div className="max-w-7xl mx-auto">
@@ -92,13 +127,27 @@ const TournamentScreen = () => {
           </div>
           
           {canCreateTournament && (
-            <Button
-              onClick={() => setCurrentView('create')}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Create Tournament
-            </Button>
+            <div className="flex space-x-2">
+              <Button
+                onClick={() => setCurrentView('create')}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create Tournament
+              </Button>
+              <Button
+                onClick={() => {
+                  const openTournament = filteredTournaments.find(t => t.status === 'open');
+                  if (openTournament) {
+                    handleAddDemoTeams(openTournament.id);
+                  }
+                }}
+                variant="outline"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700"
+              >
+                Fill Demo Teams
+              </Button>
+            </div>
           )}
         </div>
 
@@ -203,7 +252,11 @@ const TournamentScreen = () => {
                   </Badge>
                   
                   {tournament.status === 'open' && (
-                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700 text-white">
+                    <Button 
+                      size="sm" 
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                      onClick={() => handleRegisterTeam(tournament.id)}
+                    >
                       Register
                     </Button>
                   )}
