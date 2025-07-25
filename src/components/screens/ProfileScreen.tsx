@@ -3,6 +3,7 @@ import { Edit, Share, Trophy, Users, Star, Settings, LogOut, Plus, Building, Cal
 import { useAuth } from '../../contexts/AuthContext';
 import { useChallenges } from '../../contexts/ChallengeContext';
 import { useTournaments } from '../../contexts/TournamentContext';
+import { useTeams } from '../../contexts/TeamContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -21,6 +22,7 @@ const ProfileScreen = ({ onFollowersClick, onFollowingClick }: ProfileScreenProp
   const { user, logout, updateUser } = useAuth();
   const { challenges, getUserChallenges } = useChallenges();
   const { tournaments, getUserTournaments } = useTournaments();
+  const { getUserTeams } = useTeams();
   const [isEditing, setIsEditing] = useState(false);
   const [showCreateCommunity, setShowCreateCommunity] = useState(false);
   const [showCreateTournament, setShowCreateTournament] = useState(false);
@@ -40,9 +42,10 @@ const ProfileScreen = ({ onFollowersClick, onFollowingClick }: ProfileScreenProp
     createdAt: "2 months ago"
   } : null;
 
-  // Get user's challenges and tournaments
+  // Get user's challenges, tournaments, and teams
   const userChallenges = user ? getUserChallenges(user.username) : [];
   const userTournaments = user ? getUserTournaments(user.username) : [];
+  const userTeams = user ? getUserTeams(user.username) : [];
 
   // Mock posts data - in real app this would come from database
   const userPosts = [
@@ -277,18 +280,22 @@ const ProfileScreen = ({ onFollowersClick, onFollowingClick }: ProfileScreenProp
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 bg-gray-700">
+            <TabsList className="grid w-full grid-cols-4 bg-gray-700">
               <TabsTrigger value="posts" className="data-[state=active]:bg-blue-600">
-                <MessageSquare className="w-4 h-4 mr-2" />
+                <MessageSquare className="w-4 h-4 mr-1" />
                 Posts
               </TabsTrigger>
               <TabsTrigger value="challenges" className="data-[state=active]:bg-blue-600">
-                <Target className="w-4 h-4 mr-2" />
-                My Challenges
+                <Target className="w-4 h-4 mr-1" />
+                Challenges
               </TabsTrigger>
               <TabsTrigger value="matches" className="data-[state=active]:bg-blue-600">
-                <GamepadIcon className="w-4 h-4 mr-2" />
-                My Matches
+                <GamepadIcon className="w-4 h-4 mr-1" />
+                Matches
+              </TabsTrigger>
+              <TabsTrigger value="teams" className="data-[state=active]:bg-blue-600">
+                <Users className="w-4 h-4 mr-1" />
+                Teams
               </TabsTrigger>
             </TabsList>
 
@@ -429,6 +436,40 @@ const ProfileScreen = ({ onFollowersClick, onFollowingClick }: ProfileScreenProp
                 <div className="text-center py-8">
                   <p className="text-gray-400">No tournaments joined yet</p>
                 </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="teams" className="mt-4 space-y-3">
+              {userTeams.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-400">No teams joined yet</p>
+                </div>
+              ) : (
+                userTeams.map((team) => (
+                  <div key={team.id} className="p-4 bg-gray-700 rounded-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-3">
+                        <Users className="w-6 h-6 text-purple-400" />
+                        <div>
+                          <p className="text-white font-medium">{team.name}</p>
+                          <p className="text-sm text-gray-400">{team.game} • {team.members.length}/{team.maxMembers} members</p>
+                        </div>
+                      </div>
+                      <Badge 
+                        variant="outline" 
+                        className={team.leader === user?.username ? 'border-yellow-400 text-yellow-400' : 'border-purple-400 text-purple-400'}
+                      >
+                        {team.leader === user?.username ? 'Leader' : 'Member'}
+                      </Badge>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Joined {team.createdAt}</span>
+                      <span className="text-blue-400 font-medium">
+                        Led by {team.leader}
+                      </span>
+                    </div>
+                  </div>
+                ))
               )}
             </TabsContent>
           </Tabs>

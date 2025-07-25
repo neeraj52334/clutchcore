@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback } from '../ui/avatar';
 import { useWallet } from '../../contexts/WalletContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useChallenges } from '../../contexts/ChallengeContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { TournamentManager } from './TournamentManager';
 
 const CompeteScreen = () => {
@@ -33,6 +34,7 @@ const CompeteScreen = () => {
   const { deductMoney } = useWallet();
   const { user } = useAuth();
   const { challenges, addChallenge, getUserChallenges } = useChallenges();
+  const { addNotification } = useNotifications();
 
   // Game logo mapping
   const gameLogos = {
@@ -191,6 +193,14 @@ const CompeteScreen = () => {
       // Add to global challenges context
       addChallenge(newChallenge);
       
+      // Add notification for challenge creation
+      addNotification({
+        type: 'challenge_accepted',
+        title: 'Challenge Created!',
+        message: `Your ${challengeForm.game} ${challengeForm.type} challenge is now live`,
+        data: { challengeId: newChallenge.challengeId }
+      });
+      
       console.log('Challenge created:', newChallenge);
       alert('Challenge created successfully!');
       
@@ -208,6 +218,15 @@ const CompeteScreen = () => {
       // Free challenge - show confirmation
       if (confirm(`Confirm registration for ${challenge.challengeId}?`)) {
         setRegisteredChallenges(prev => new Set([...prev, challenge.challengeId]));
+        
+        // Add notification for challenge acceptance
+        addNotification({
+          type: 'challenge_accepted',
+          title: 'Challenge Joined!',
+          message: `You joined ${challenge.creator}'s ${challenge.game} challenge`,
+          data: { challengeId: challenge.challengeId, opponent: challenge.creator }
+        });
+        
         alert(`Successfully joined ${challenge.challengeId}!`);
       }
     } else {
@@ -216,6 +235,15 @@ const CompeteScreen = () => {
         try {
           await deductMoney(selectedPrice, 'challenge_entry', challenge.challengeId);
           setRegisteredChallenges(prev => new Set([...prev, challenge.challengeId]));
+          
+          // Add notification for paid challenge acceptance
+          addNotification({
+            type: 'challenge_accepted',
+            title: 'Challenge Joined!',
+            message: `You joined ${challenge.creator}'s ${challenge.game} challenge for ₹${selectedPrice}`,
+            data: { challengeId: challenge.challengeId, opponent: challenge.creator, amount: selectedPrice }
+          });
+          
           console.log('Successfully joined challenge:', challenge.challengeId);
           alert(`Successfully joined ${challenge.challengeId}!`);
         } catch (error) {
@@ -267,6 +295,15 @@ const CompeteScreen = () => {
       // Free tournament - show confirmation
       if (confirm(`Confirm registration for ${tournament.title}?`)) {
         setRegisteredTournaments(prev => new Set([...prev, tournament.id]));
+        
+        // Add notification for tournament registration
+        addNotification({
+          type: 'tournament_update',
+          title: 'Tournament Registered!',
+          message: `You registered for ${tournament.title}`,
+          data: { tournamentId: tournament.id, tournamentName: tournament.title }
+        });
+        
         alert(`Successfully registered for ${tournament.title}!`);
       }
     } else {
@@ -275,6 +312,15 @@ const CompeteScreen = () => {
         try {
           await deductMoney(tournament.entryFee, 'tournament_entry', tournament.id.toString());
           setRegisteredTournaments(prev => new Set([...prev, tournament.id]));
+          
+          // Add notification for paid tournament registration
+          addNotification({
+            type: 'tournament_update',
+            title: 'Tournament Registered!',
+            message: `You registered for ${tournament.title} - Entry fee: ₹${tournament.entryFee}`,
+            data: { tournamentId: tournament.id, tournamentName: tournament.title, entryFee: tournament.entryFee }
+          });
+          
           alert(`Payment successful! Registered for ${tournament.title}`);
         } catch (error) {
           console.error('Failed to register for tournament:', error);

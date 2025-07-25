@@ -13,7 +13,7 @@ const BottomNavigation = ({ activeTab, onTabChange, userRole }: BottomNavigation
     { id: 'home', icon: Home, label: 'Home' },
     { id: 'search', icon: Search, label: 'Search' },
     { id: 'compete', icon: Swords, label: 'Compete' },
-    { id: 'tournaments', icon: Trophy, label: 'Tournaments' },
+    { id: 'tournaments', icon: Trophy, label: 'Championship' },
     { id: 'profile', icon: User, label: 'Profile' },
   ];
 

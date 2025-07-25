@@ -1,12 +1,15 @@
 
-import { MessageCircle, Wallet, ArrowLeft } from 'lucide-react';
+import { MessageCircle, Wallet, ArrowLeft, Bell, Users } from 'lucide-react';
 import { useWallet } from '../../contexts/WalletContext';
+import { useNotifications } from '../../contexts/NotificationContext';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 
 interface TopNavigationProps {
   onMessagesClick: () => void;
   onWalletClick: () => void;
+  onNotificationsClick: () => void;
+  onTeamsClick: () => void;
   showBack?: boolean;
   onBackClick?: () => void;
   title?: string;
@@ -14,12 +17,15 @@ interface TopNavigationProps {
 
 const TopNavigation = ({ 
   onMessagesClick, 
-  onWalletClick, 
+  onWalletClick,
+  onNotificationsClick,
+  onTeamsClick,
   showBack = false, 
   onBackClick,
   title 
 }: TopNavigationProps) => {
   const { balance } = useWallet();
+  const { getUnreadCount } = useNotifications();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-b border-gray-800">
@@ -50,7 +56,30 @@ const TopNavigation = ({
           )}
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onTeamsClick}
+            className="text-white hover:bg-gray-800"
+          >
+            <Users className="w-5 h-5" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onNotificationsClick}
+            className="text-white hover:bg-gray-800 relative"
+          >
+            <Bell className="w-5 h-5" />
+            {getUnreadCount() > 0 && (
+              <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center p-0">
+                {getUnreadCount()}
+              </Badge>
+            )}
+          </Button>
+
           <Button
             variant="ghost"
             size="sm"

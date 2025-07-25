@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { ChallengeProvider } from '../contexts/ChallengeContext';
 import { TournamentProvider } from '../contexts/TournamentContext';
+import { TeamProvider } from '../contexts/TeamContext';
+import { NotificationProvider } from '../contexts/NotificationContext';
 import { Toaster } from '../components/ui/toaster';
 import TopNavigation from './navigation/TopNavigation';
 import BottomNavigation from './navigation/BottomNavigation';
@@ -17,6 +19,8 @@ import UserProfileScreen from './screens/UserProfileScreen';
 import FollowListScreen from './screens/FollowListScreen';
 import OwnerDashboard from './screens/OwnerDashboard';
 import TournamentScreen from './screens/TournamentScreen';
+import TeamsScreen from './screens/TeamsScreen';
+import NotificationsScreen from './screens/NotificationsScreen';
 
 
 const MainApp = () => {
@@ -139,6 +143,10 @@ const MainApp = () => {
             return <CompeteScreen />;
           case 'tournaments':
             return <TournamentScreen />;
+          case 'teams':
+            return <TeamsScreen />;
+          case 'notifications':
+            return <NotificationsScreen />;
           case 'profile':
             return (
               <ProfileScreen
@@ -157,14 +165,18 @@ const MainApp = () => {
   return (
     <ChallengeProvider>
       <TournamentProvider>
-        <div className="min-h-screen bg-gray-900 text-white">
-        {/* Hide top navigation for owner dashboard */}
-        {!(user?.role === 'owner' && activeTab === 'profile') && (
-          <TopNavigation 
-            onMessagesClick={() => setCurrentScreen('messages')}
-            onWalletClick={() => setCurrentScreen('wallet')}
-          />
-        )}
+        <TeamProvider>
+          <NotificationProvider>
+            <div className="min-h-screen bg-gray-900 text-white">
+            {/* Hide top navigation for owner dashboard */}
+            {!(user?.role === 'owner' && activeTab === 'profile') && (
+              <TopNavigation 
+                onMessagesClick={() => setCurrentScreen('messages')}
+                onWalletClick={() => setCurrentScreen('wallet')}
+                onNotificationsClick={() => setCurrentScreen('notifications')}
+                onTeamsClick={() => setCurrentScreen('teams')}
+              />
+            )}
         
         <main className={`${!(user?.role === 'owner' && activeTab === 'profile') ? 'pb-20 pt-16' : ''}`}>
           {renderScreen()}
@@ -178,8 +190,10 @@ const MainApp = () => {
             userRole={user?.role || 'gamer'}
           />
          )}
-        </div>
-        <Toaster />
+            </div>
+            <Toaster />
+          </NotificationProvider>
+        </TeamProvider>
       </TournamentProvider>
     </ChallengeProvider>
   );
