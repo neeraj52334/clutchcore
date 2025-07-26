@@ -18,15 +18,30 @@ export interface Tournament {
   groups?: TournamentGroup[];
   currentRound: number;
   totalRounds: number;
+  mode: 'solo' | 'squad';
+  registeredPlayers?: TournamentPlayer[]; // For solo tournaments
+}
+
+export interface TournamentPlayer {
+  id: string;
+  username: string;
+  inGameName: string;
+  registeredAt: string;
 }
 
 export interface TournamentTeam {
   id: string;
   name: string;
   captain: string;
-  members: string[];
+  members: TournamentTeamMember[];
   groupId?: string;
   registeredAt: string;
+  teamId?: string; // Reference to actual team if squad tournament
+}
+
+export interface TournamentTeamMember {
+  username: string;
+  inGameName: string;
 }
 
 export interface TournamentGroup {
@@ -68,6 +83,7 @@ interface TournamentContextType {
   addTournament: (tournament: Tournament) => void;
   updateTournament: (id: string, updates: Partial<Tournament>) => void;
   registerTeam: (tournamentId: string, team: TournamentTeam) => void;
+  registerPlayer: (tournamentId: string, player: TournamentPlayer) => void;
   getActiveTournaments: () => Tournament[];
   getUserTournaments: (username: string) => Tournament[];
   createGroups: (tournamentId: string) => void;
@@ -107,7 +123,9 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
       createdAt: '2024-01-10T12:00:00Z',
       registeredTeams: [],
       currentRound: 1,
-      totalRounds: 4
+      totalRounds: 4,
+      mode: 'squad',
+      registeredPlayers: []
     },
     {
       id: 'T002',
@@ -124,7 +142,9 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
       createdAt: '2024-01-18T15:30:00Z',
       registeredTeams: [],
       currentRound: 1,
-      totalRounds: 5
+      totalRounds: 5,
+      mode: 'solo',
+      registeredPlayers: []
     }
   ]);
 
@@ -150,12 +170,31 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
     return tournaments.filter(tournament => tournament.status === 'open');
   };
 
+  const registerPlayer = (tournamentId: string, player: TournamentPlayer) => {
+    setTournaments(prev => prev.map(tournament => 
+      tournament.id === tournamentId 
+        ? { 
+            ...tournament, 
+            registeredPlayers: [...(tournament.registeredPlayers || []), player] 
+          }
+        : tournament
+    ));
+  };
+
   const getUserTournaments = (username: string) => {
-    return tournaments.filter(tournament => 
-      tournament.registeredTeams.some(team => 
-        team.captain === username || team.members.includes(username)
-      )
-    );
+    return tournaments.filter(tournament => {
+      // Check squad tournaments
+      const isInSquadTournament = tournament.mode === 'squad' && 
+        tournament.registeredTeams.some(team => 
+          team.captain === username || team.members.some(member => member.username === username)
+        );
+      
+      // Check solo tournaments
+      const isInSoloTournament = tournament.mode === 'solo' && 
+        tournament.registeredPlayers?.some(player => player.username === username);
+      
+      return isInSquadTournament || isInSoloTournament;
+    });
   };
 
   const createGroups = (tournamentId: string) => {
@@ -263,7 +302,12 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
         id: `demo_team_${i + 1}`,
         name: `Demo Team ${i + 1}`,
         captain: `Captain${i + 1}`,
-        members: [`Captain${i + 1}`, `Player${i + 1}A`, `Player${i + 1}B`, `Player${i + 1}C`],
+        members: [
+          { username: `Captain${i + 1}`, inGameName: `Cap${i + 1}` },
+          { username: `Player${i + 1}A`, inGameName: `P${i + 1}A` },
+          { username: `Player${i + 1}B`, inGameName: `P${i + 1}B` },
+          { username: `Player${i + 1}C`, inGameName: `P${i + 1}C` }
+        ],
         registeredAt: new Date().toISOString()
       });
     }
@@ -281,6 +325,7 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
       addTournament,
       updateTournament,
       registerTeam,
+      registerPlayer,
       getActiveTournaments,
       getUserTournaments,
       createGroups,

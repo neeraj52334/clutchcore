@@ -8,6 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { useTournaments } from '../../contexts/TournamentContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../hooks/use-toast';
+import { useTeams } from '../../contexts/TeamContext';
+import { useNotifications } from '../../contexts/NotificationContext';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import TournamentCreation from './TournamentCreation';
 import TournamentDetails from './TournamentDetails';
 
@@ -15,11 +18,15 @@ const TournamentScreen = () => {
   const { tournaments, registerTeam, addDemoTeams } = useTournaments();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { getUserTeams } = useTeams();
+  const { addNotification } = useNotifications();
   const [currentView, setCurrentView] = useState<'list' | 'create' | 'details'>('list');
   const [selectedTournament, setSelectedTournament] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'live' | 'completed'>('all');
   const [gameFilter, setGameFilter] = useState<string>('all');
+  const [showTeamSelection, setShowTeamSelection] = useState(false);
+  const [selectedTournamentForReg, setSelectedTournamentForReg] = useState<string | null>(null);
 
   const games = ['VALORANT', 'Free Fire', 'PUBG Mobile', 'Call of Duty Mobile', 'Clash Royale', 'FIFA Mobile'];
 
@@ -91,24 +98,89 @@ const TournamentScreen = () => {
     }
 
     // Find the tournament
-    const tournament = tournaments.find(t => t.id === tournamentId);
+    const foundTournament = tournaments.find(t => t.id === tournamentId);
+    if (!foundTournament) return;
 
-    const team = {
-      id: `team_${Date.now()}`,
-      name: `${user.username}'s Team`,
-      captain: user.username,
-      members: [user.username],
-      registeredAt: new Date().toISOString()
-    };
+    if (foundTournament.mode === 'solo') {
+      // Solo registration - show confirmation and register player
+      const confirmed = window.confirm(`Register for ${foundTournament.name}?\n\nYour profile info:\nUsername: ${user.username}\nIn-game ID: ${user.gameIds[foundTournament.game] || 'Not set'}`);
+      if (confirmed) {
+        const team = {
+          id: `team_${Date.now()}`,
+          name: user.username,
+          captain: user.username,
+          members: [{ username: user.username, inGameName: user.gameIds[foundTournament.game] || user.username }],
+          registeredAt: new Date().toISOString()
+        };
+        registerTeam(tournamentId, team);
+        
+        // Add registration notification
+        addNotification({
+          type: 'tournament_registration',
+          title: 'Registration Successful',
+          message: `Successfully registered for ${foundTournament.name}`,
+          data: { tournamentId, tournamentName: foundTournament.name }
+        });
+        
+        toast({
+          title: "Registration Successful!",
+          description: `You've been registered for ${foundTournament.name}`,
+        });
+      }
+    } else {
+      // Squad registration - show team selection dialog
+      setSelectedTournamentForReg(tournamentId);
+      setShowTeamSelection(true);
+    }
+  };
 
-    registerTeam(tournamentId, team);
+  const handleSquadRegistration = (teamId: string) => {
+    if (!selectedTournamentForReg || !user) return;
     
-    // Add tournament registration notification
-    // You can import and use the notification context here
-    toast({
-      title: "Registration Successful!",
-      description: `You've been registered for ${tournament?.name || 'the tournament'}`,
-    });
+    const foundTournament = tournaments.find(t => t.id === selectedTournamentForReg);
+    const userTeams = getUserTeams(user.username);
+    const selectedTeam = userTeams.find(t => t.id === teamId);
+    
+    if (!foundTournament || !selectedTeam) return;
+    
+    const confirmed = window.confirm(`Register team "${selectedTeam.name}" for ${foundTournament.name}?`);
+    if (confirmed) {
+      const tournamentTeam = {
+        id: `team_${Date.now()}`,
+        name: selectedTeam.name,
+        captain: selectedTeam.leader,
+        members: selectedTeam.members.map(m => ({
+          username: m.username,
+          inGameName: user.gameIds[foundTournament.game] || m.username
+        })),
+        registeredAt: new Date().toISOString(),
+        teamId: selectedTeam.id
+      };
+      
+      registerTeam(selectedTournamentForReg, tournamentTeam);
+      
+      // Send notifications to all team members
+      selectedTeam.members.forEach(member => {
+        addNotification({
+          type: 'tournament_registration',
+          title: 'Team Tournament Registration',
+          message: `Your team "${selectedTeam.name}" has been registered for ${foundTournament.name}`,
+          data: { 
+            tournamentId: selectedTournamentForReg, 
+            tournamentName: foundTournament.name,
+            teamName: selectedTeam.name
+          }
+        });
+      });
+      
+      toast({
+        title: "Team Registered!",
+        description: `${selectedTeam.name} has been registered for ${foundTournament.name}`,
+      });
+      
+      setShowTeamSelection(false);
+      setSelectedTournamentForReg(null);
+    }
   };
 
   const handleAddDemoTeams = (tournamentId: string) => {
@@ -309,6 +381,31 @@ const TournamentScreen = () => {
           </Card>
         )}
       </div>
+    </div>
+      {/* Team Selection Dialog */}
+      <Dialog open={showTeamSelection} onOpenChange={setShowTeamSelection}>
+        <DialogContent className="bg-gray-800 border-gray-700">
+          <DialogHeader>
+            <DialogTitle className="text-white">Select Team for Registration</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {user && getUserTeams(user.username).map((team) => (
+              <Card key={team.id} className="bg-gray-700 border-gray-600 cursor-pointer hover:bg-gray-600" 
+                    onClick={() => handleSquadRegistration(team.id)}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-white font-medium">{team.name}</h4>
+                      <p className="text-gray-400 text-sm">{team.members.length}/{team.maxMembers} members</p>
+                    </div>
+                    <Badge className="bg-purple-600">{team.game}</Badge>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

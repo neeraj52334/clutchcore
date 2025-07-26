@@ -18,6 +18,19 @@ interface Team {
   description?: string;
   createdAt: string;
   isRecruiting: boolean;
+  wallet: {
+    balance: number;
+    transactions: TeamTransaction[];
+  };
+}
+
+interface TeamTransaction {
+  id: string;
+  type: 'prize_received' | 'distribution';
+  amount: number;
+  description: string;
+  createdAt: string;
+  recipient?: string; // For distributions
 }
 
 interface TeamInvitation {
@@ -33,13 +46,15 @@ interface TeamInvitation {
 interface TeamContextType {
   teams: Team[];
   invitations: TeamInvitation[];
-  createTeam: (team: Omit<Team, 'id' | 'createdAt'>) => void;
+  createTeam: (team: Omit<Team, 'id' | 'createdAt' | 'wallet'>) => void;
   invitePlayer: (teamId: string, username: string) => void;
   respondToInvitation: (invitationId: string, response: 'accepted' | 'declined') => void;
   removeMember: (teamId: string, memberId: string) => void;
   getUserTeams: (username: string) => Team[];
   getUserInvitations: (username: string) => TeamInvitation[];
   leaveTeam: (teamId: string, username: string) => void;
+  addPrizeToTeam: (teamId: string, amount: number, description: string) => void;
+  distributeFunds: (teamId: string, memberId: string, amount: number) => void;
 }
 
 const TeamContext = createContext<TeamContextType | undefined>(undefined);
@@ -78,17 +93,41 @@ export const TeamProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       maxMembers: 5,
       description: 'Competitive VALORANT team looking for skilled players',
       createdAt: '2 months ago',
-      isRecruiting: true
+      isRecruiting: true,
+      wallet: {
+        balance: 1500,
+        transactions: [
+          {
+            id: 'txn_1',
+            type: 'prize_received',
+            amount: 2000,
+            description: 'Summer League 1st Place',
+            createdAt: '1 week ago'
+          },
+          {
+            id: 'txn_2',
+            type: 'distribution',
+            amount: 500,
+            description: 'Distribution to ProGamer99',
+            createdAt: '5 days ago',
+            recipient: 'ProGamer99'
+          }
+        ]
+      }
     }
   ]);
 
   const [invitations, setInvitations] = useState<TeamInvitation[]>([]);
 
-  const createTeam = (teamData: Omit<Team, 'id' | 'createdAt'>) => {
+  const createTeam = (teamData: Omit<Team, 'id' | 'createdAt' | 'wallet'>) => {
     const newTeam: Team = {
       ...teamData,
       id: `team_${Date.now()}`,
-      createdAt: 'now'
+      createdAt: 'now',
+      wallet: {
+        balance: 0,
+        transactions: []
+      }
     };
     setTeams(prev => [newTeam, ...prev]);
   };
@@ -184,6 +223,56 @@ export const TeamProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     );
   };
 
+  const addPrizeToTeam = (teamId: string, amount: number, description: string) => {
+    setTeams(prev => 
+      prev.map(team => {
+        if (team.id === teamId) {
+          const transaction: TeamTransaction = {
+            id: `txn_${Date.now()}`,
+            type: 'prize_received',
+            amount,
+            description,
+            createdAt: 'now'
+          };
+          return {
+            ...team,
+            wallet: {
+              balance: team.wallet.balance + amount,
+              transactions: [transaction, ...team.wallet.transactions]
+            }
+          };
+        }
+        return team;
+      })
+    );
+  };
+
+  const distributeFunds = (teamId: string, memberId: string, amount: number) => {
+    setTeams(prev => 
+      prev.map(team => {
+        if (team.id === teamId && team.wallet.balance >= amount) {
+          const member = team.members.find(m => m.id === memberId);
+          const transaction: TeamTransaction = {
+            id: `txn_${Date.now()}`,
+            type: 'distribution',
+            amount,
+            description: `Distribution to ${member?.username}`,
+            createdAt: 'now',
+            recipient: member?.username
+          };
+          return {
+            ...team,
+            wallet: {
+              balance: team.wallet.balance - amount,
+              transactions: [transaction, ...team.wallet.transactions]
+            }
+          };
+        }
+        return team;
+      })
+    );
+  };
+
   return (
     <TeamContext.Provider value={{
       teams,
@@ -194,7 +283,9 @@ export const TeamProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       removeMember,
       getUserTeams,
       getUserInvitations,
-      leaveTeam
+      leaveTeam,
+      addPrizeToTeam,
+      distributeFunds
     }}>
       {children}
     </TeamContext.Provider>

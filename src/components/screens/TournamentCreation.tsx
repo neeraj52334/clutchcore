@@ -114,7 +114,9 @@ const TournamentCreation: React.FC<TournamentCreationProps> = ({ onBack }) => {
       createdAt: new Date().toISOString(),
       registeredTeams: [],
       currentRound: 1,
-      totalRounds: totalRounds
+      totalRounds: totalRounds,
+      mode: 'squad', // Default to squad for now, can be made configurable
+      registeredPlayers: []
     };
 
     addTournament(tournament);

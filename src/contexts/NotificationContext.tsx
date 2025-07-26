@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface Notification {
   id: string;
-  type: 'challenge_accepted' | 'team_invite' | 'new_follower' | 'new_message' | 'tournament_update' | 'room_id';
+  type: 'challenge_accepted' | 'team_invite' | 'new_follower' | 'new_message' | 'tournament_update' | 'room_id' | 'tournament_registration';
   title: string;
   message: string;
   timestamp: string;

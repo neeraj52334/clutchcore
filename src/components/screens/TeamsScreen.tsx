@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Users, Crown, UserPlus, UserMinus, LogOut, Search } from 'lucide-react';
+import { Plus, Users, Crown, UserPlus, UserMinus, LogOut, Search, Wallet, Send, History } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -15,7 +15,7 @@ import { useNotifications } from '../../contexts/NotificationContext';
 
 const TeamsScreen = () => {
   const { user } = useAuth();
-  const { teams, createTeam, invitePlayer, removeMember, getUserTeams, leaveTeam } = useTeams();
+  const { teams, createTeam, invitePlayer, removeMember, getUserTeams, leaveTeam, addPrizeToTeam, distributeFunds } = useTeams();
   const { addNotification } = useNotifications();
   const [activeTab, setActiveTab] = useState('browse');
   const [showCreateForm, setShowCreateForm] = useState(false);
@@ -221,12 +221,16 @@ const TeamsScreen = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-gray-800">
+        <TabsList className="grid w-full grid-cols-3 bg-gray-800">
           <TabsTrigger value="browse" className="data-[state=active]:bg-purple-600">
             Browse Teams
           </TabsTrigger>
           <TabsTrigger value="my-teams" className="data-[state=active]:bg-purple-600">
             My Teams ({userTeams.length})
+          </TabsTrigger>
+          <TabsTrigger value="wallet" className="data-[state=active]:bg-purple-600">
+            <Wallet className="w-4 h-4 mr-1" />
+            Team Wallet
           </TabsTrigger>
         </TabsList>
 
@@ -402,6 +406,100 @@ const TeamsScreen = () => {
                 </Card>
               );
             })
+          )}
+        </TabsContent>
+
+        <TabsContent value="wallet" className="space-y-4">
+          {userTeams.filter(team => team.leader === user?.username).length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-400 mb-4">You need to be a team leader to manage team wallet</p>
+            </div>
+          ) : (
+            userTeams.filter(team => team.leader === user?.username).map((team) => (
+              <Card key={team.id} className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white flex items-center">
+                    <Wallet className="w-5 h-5 mr-2 text-green-400" />
+                    {team.name} Wallet
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="bg-gray-700 p-4 rounded-lg">
+                    <div className="text-center">
+                      <p className="text-gray-400 text-sm">Current Balance</p>
+                      <p className="text-2xl font-bold text-green-400">₹{team.wallet.balance}</p>
+                    </div>
+                  </div>
+
+                  {/* Distribution Section */}
+                  <div className="space-y-3">
+                    <h4 className="text-white font-medium">Distribute Funds</h4>
+                    {team.members.filter(member => member.role !== 'leader').map((member) => (
+                      <div key={member.id} className="flex items-center justify-between p-3 bg-gray-700 rounded">
+                        <div className="flex items-center space-x-3">
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={member.avatar} />
+                            <AvatarFallback className="bg-blue-600 text-white text-xs">
+                              {member.username[0]?.toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-white">{member.username}</span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Input
+                            type="number"
+                            placeholder="Amount"
+                            className="w-24 bg-gray-600 border-gray-500 text-white"
+                            onChange={(e) => {
+                              // Store amount for this member
+                            }}
+                          />
+                          <Button 
+                            size="sm"
+                            onClick={() => {
+                              const amount = parseInt((document.querySelector(`input[placeholder="Amount"]`) as HTMLInputElement)?.value || '0');
+                              if (amount > 0 && amount <= team.wallet.balance) {
+                                distributeFunds(team.id, member.id, amount);
+                                alert(`₹${amount} distributed to ${member.username}`);
+                              } else {
+                                alert('Invalid amount or insufficient balance');
+                              }
+                            }}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Send className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Transaction History */}
+                  <div className="space-y-3">
+                    <h4 className="text-white font-medium flex items-center">
+                      <History className="w-4 h-4 mr-2" />
+                      Recent Transactions
+                    </h4>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {team.wallet.transactions.slice(0, 10).map((transaction) => (
+                        <div key={transaction.id} className="flex items-center justify-between p-2 bg-gray-700 rounded">
+                          <div>
+                            <p className="text-white font-medium">{transaction.description}</p>
+                            <p className="text-xs text-gray-400">{transaction.createdAt}</p>
+                          </div>
+                          <p className={`font-bold ${transaction.type === 'prize_received' ? 'text-green-400' : 'text-red-400'}`}>
+                            {transaction.type === 'prize_received' ? '+' : '-'}₹{transaction.amount}
+                          </p>
+                        </div>
+                      ))}
+                      {team.wallet.transactions.length === 0 && (
+                        <p className="text-gray-400 text-center py-4">No transactions yet</p>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
           )}
         </TabsContent>
       </Tabs>
