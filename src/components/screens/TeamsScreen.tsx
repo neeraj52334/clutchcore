@@ -31,6 +31,7 @@ const TeamsScreen = () => {
   });
 
   const userTeams = user ? getUserTeams(user.username) : [];
+  const canCreateMoreTeams = userTeams.length < 2;
   const availableTeams = teams.filter(team => 
     !team.members.some(member => member.username === user?.username) && 
     team.isRecruiting &&
@@ -49,6 +50,11 @@ const TeamsScreen = () => {
   const handleCreateTeam = () => {
     if (!user || !createForm.name || !createForm.game) {
       alert('Please fill in all required fields');
+      return;
+    }
+
+    if (!canCreateMoreTeams) {
+      alert('You can only create or join a maximum of 2 teams');
       return;
     }
 
@@ -119,7 +125,8 @@ const TeamsScreen = () => {
         </h1>
         <Button
           onClick={() => setShowCreateForm(true)}
-          className="bg-purple-600 hover:bg-purple-700 flex items-center space-x-1"
+          disabled={!canCreateMoreTeams}
+          className="bg-purple-600 hover:bg-purple-700 flex items-center space-x-1 disabled:opacity-50"
         >
           <Plus className="w-4 h-4" />
           <span>Create Team</span>

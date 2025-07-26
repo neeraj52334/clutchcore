@@ -90,6 +90,9 @@ const TournamentScreen = () => {
       return;
     }
 
+    // Find the tournament
+    const tournament = tournaments.find(t => t.id === tournamentId);
+
     const team = {
       id: `team_${Date.now()}`,
       name: `${user.username}'s Team`,
@@ -99,9 +102,12 @@ const TournamentScreen = () => {
     };
 
     registerTeam(tournamentId, team);
+    
+    // Add tournament registration notification
+    // You can import and use the notification context here
     toast({
       title: "Registration Successful!",
-      description: `You've been registered for the tournament`,
+      description: `You've been registered for ${tournament?.name || 'the tournament'}`,
     });
   };
 

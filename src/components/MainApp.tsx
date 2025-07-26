@@ -152,6 +152,7 @@ const MainApp = () => {
               <ProfileScreen
                 onFollowersClick={handleFollowersClick}
                 onFollowingClick={handleFollowingClick}
+                setActiveView={setActiveTab}
               />
             );
           case 'requests':
@@ -173,8 +174,8 @@ const MainApp = () => {
               <TopNavigation 
                 onMessagesClick={() => setCurrentScreen('messages')}
                 onWalletClick={() => setCurrentScreen('wallet')}
-                onNotificationsClick={() => setCurrentScreen('notifications')}
-                onTeamsClick={() => setCurrentScreen('teams')}
+                onNotificationsClick={() => setActiveTab('notifications')}
+                onTeamsClick={() => setActiveTab('teams')}
               />
             )}
         

@@ -48,6 +48,15 @@ const NotificationsScreen = () => {
     if (!notification.read) {
       markAsRead(notification.id);
     }
+    
+    // Handle specific notification types
+    if (notification.type === 'tournament_update' && notification.data?.tournamentId) {
+      // Navigate to tournament details/announcement tab
+      alert(`Opening tournament: ${notification.data.tournamentName}`);
+    } else if (notification.type === 'room_id' && notification.data?.tournamentId) {
+      // Navigate to tournament announcement tab
+      alert(`Opening tournament announcement for: ${notification.data.tournamentName}`);
+    }
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;

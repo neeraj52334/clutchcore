@@ -57,6 +57,29 @@ export const NotificationProvider: React.FC<{ children: ReactNode }> = ({ childr
       timestamp: '1 hour ago',
       read: true,
       data: { followerId: 'GameMaster123' }
+    },
+    {
+      id: 'notif_4',
+      type: 'tournament_update',
+      title: 'Tournament Registration Successful',
+      message: 'You have been successfully registered for VALORANT Championship',
+      timestamp: '30 minutes ago',
+      read: false,
+      data: { tournamentId: 'tourn_1', tournamentName: 'VALORANT Championship' }
+    },
+    {
+      id: 'notif_5',
+      type: 'room_id',
+      title: 'Tournament Room Details',
+      message: 'Room ID and password for VALORANT Championship has been shared',
+      timestamp: '15 minutes ago',
+      read: false,
+      data: { 
+        tournamentId: 'tourn_1', 
+        tournamentName: 'VALORANT Championship',
+        roomId: 'VCT2024_ROOM_001',
+        password: 'VCT2024'
+      }
     }
   ]);
 

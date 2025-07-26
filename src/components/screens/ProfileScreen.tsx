@@ -16,9 +16,10 @@ import CommunityDashboard from './CommunityDashboard';
 interface ProfileScreenProps {
   onFollowersClick?: () => void;
   onFollowingClick?: () => void;
+  setActiveView?: (view: string) => void;
 }
 
-const ProfileScreen = ({ onFollowersClick, onFollowingClick }: ProfileScreenProps) => {
+const ProfileScreen = ({ onFollowersClick, onFollowingClick, setActiveView }: ProfileScreenProps) => {
   const { user, logout, updateUser } = useAuth();
   const { challenges, getUserChallenges } = useChallenges();
   const { tournaments, getUserTournaments } = useTournaments();
@@ -439,37 +440,58 @@ const ProfileScreen = ({ onFollowersClick, onFollowingClick }: ProfileScreenProp
               )}
             </TabsContent>
 
-            <TabsContent value="teams" className="mt-4 space-y-3">
+            <TabsContent value="teams" className="space-y-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-white">My Teams</h3>
+                <Button
+                  onClick={() => setActiveView?.('teams')}
+                  size="sm"
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  Create Team
+                </Button>
+              </div>
+              
               {userTeams.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-400">No teams joined yet</p>
-                </div>
-              ) : (
-                userTeams.map((team) => (
-                  <div key={team.id} className="p-4 bg-gray-700 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-3">
-                        <Users className="w-6 h-6 text-purple-400" />
-                        <div>
-                          <p className="text-white font-medium">{team.name}</p>
-                          <p className="text-sm text-gray-400">{team.game} • {team.members.length}/{team.maxMembers} members</p>
-                        </div>
-                      </div>
-                      <Badge 
-                        variant="outline" 
-                        className={team.leader === user?.username ? 'border-yellow-400 text-yellow-400' : 'border-purple-400 text-purple-400'}
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-6">
+                    <div className="text-center">
+                      <Users className="w-12 h-12 text-purple-400 mx-auto mb-3" />
+                      <h3 className="text-lg font-semibold text-white mb-2">No Teams Yet</h3>
+                      <p className="text-gray-400 mb-4">You haven't joined any teams. Create or join one to get started!</p>
+                      <Button
+                        onClick={() => setActiveView?.('teams')}
+                        className="bg-purple-600 hover:bg-purple-700"
                       >
-                        {team.leader === user?.username ? 'Leader' : 'Member'}
-                      </Badge>
+                        Browse Teams
+                      </Button>
                     </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400">Joined {team.createdAt}</span>
-                      <span className="text-blue-400 font-medium">
-                        Led by {team.leader}
-                      </span>
-                    </div>
-                  </div>
-                ))
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {userTeams.map((team) => (
+                    <Card key={team.id} className="bg-gray-800 border-gray-700">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="bg-purple-600 p-2 rounded-lg">
+                              <Users className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <h4 className="text-white font-medium">{team.name}</h4>
+                              <p className="text-sm text-gray-400">{team.game} • {team.members.length} members</p>
+                            </div>
+                          </div>
+                          <Badge className={team.leader === user?.username ? 'bg-yellow-600' : 'bg-blue-600'}>
+                            {team.leader === user?.username ? 'Leader' : 'Member'}
+                          </Badge>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               )}
             </TabsContent>
           </Tabs>
