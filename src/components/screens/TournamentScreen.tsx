@@ -102,14 +102,27 @@ const TournamentScreen = () => {
     if (!foundTournament) return;
 
     if (foundTournament.mode === 'solo') {
-      // Solo registration - show confirmation and register player
-      const confirmed = window.confirm(`Register for ${foundTournament.name}?\n\nYour profile info:\nUsername: ${user.username}\nIn-game ID: ${user.gameIds[foundTournament.game] || 'Not set'}`);
+      // Solo registration - show confirmation with user details
+      const inGameName = user.gameIds[foundTournament.game] || 'Not set';
+      const confirmed = window.confirm(
+        `Register for ${foundTournament.name}?\n\n` +
+        `Tournament: ${foundTournament.name}\n` +
+        `Mode: Solo\n` +
+        `Your Details:\n` +
+        `Username: ${user.username}\n` +
+        `In-game Name: ${inGameName}\n\n` +
+        `Confirm registration?`
+      );
+      
       if (confirmed) {
         const team = {
           id: `team_${Date.now()}`,
           name: user.username,
           captain: user.username,
-          members: [{ username: user.username, inGameName: user.gameIds[foundTournament.game] || user.username }],
+          members: [{ 
+            username: user.username, 
+            inGameName: user.gameIds[foundTournament.game] || user.username 
+          }],
           registeredAt: new Date().toISOString()
         };
         registerTeam(tournamentId, team);
@@ -117,8 +130,8 @@ const TournamentScreen = () => {
         // Add registration notification
         addNotification({
           type: 'tournament_registration',
-          title: 'Registration Successful',
-          message: `Successfully registered for ${foundTournament.name}`,
+          title: 'Tournament Registration Successful',
+          message: `You have successfully registered for ${foundTournament.name}`,
           data: { tournamentId, tournamentName: foundTournament.name }
         });
         
@@ -163,8 +176,8 @@ const TournamentScreen = () => {
       selectedTeam.members.forEach(member => {
         addNotification({
           type: 'tournament_registration',
-          title: 'Team Tournament Registration',
-          message: `Your team "${selectedTeam.name}" has been registered for ${foundTournament.name}`,
+          title: 'Squad Tournament Registration',
+          message: `Your team "${selectedTeam.name}" has been successfully registered for ${foundTournament.name}`,
           data: { 
             tournamentId: selectedTournamentForReg, 
             tournamentName: foundTournament.name,

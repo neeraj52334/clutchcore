@@ -191,7 +191,7 @@ const ProfileScreen = ({ onFollowersClick, onFollowingClick, setActiveView }: Pr
                 <Button variant="outline" className="border-gray-600 text-gray-400">
                   <Share className="w-4 h-4" />
                 </Button>
-              </>
+                </>
             )}
           </div>
         </CardContent>
