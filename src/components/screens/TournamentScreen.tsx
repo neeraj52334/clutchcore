@@ -381,7 +381,7 @@ const TournamentScreen = () => {
           </Card>
         )}
       </div>
-    </div>
+
       {/* Team Selection Dialog */}
       <Dialog open={showTeamSelection} onOpenChange={setShowTeamSelection}>
         <DialogContent className="bg-gray-800 border-gray-700">
