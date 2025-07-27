@@ -19,6 +19,8 @@ interface ChallengeContextType {
   challenges: Challenge[];
   addChallenge: (challenge: Challenge) => void;
   getUserChallenges: (username: string) => Challenge[];
+  joinChallenge: (challengeId: string, username: string) => void;
+  getUserJoinedChallenges: (username: string) => Challenge[];
 }
 
 const ChallengeContext = createContext<ChallengeContextType | undefined>(undefined);
@@ -75,11 +77,25 @@ export const ChallengeProvider: React.FC<ChallengeProviderProps> = ({ children }
     return challenges.filter(challenge => challenge.creator === username);
   };
 
+  const joinChallenge = (challengeId: string, username: string) => {
+    setChallenges(prev => prev.map(challenge => 
+      challenge.challengeId === challengeId 
+        ? { ...challenge, opponent: username, status: 'accepted' }
+        : challenge
+    ));
+  };
+
+  const getUserJoinedChallenges = (username: string) => {
+    return challenges.filter(challenge => challenge.opponent === username);
+  };
+
   return (
     <ChallengeContext.Provider value={{
       challenges,
       addChallenge,
-      getUserChallenges
+      getUserChallenges,
+      joinChallenge,
+      getUserJoinedChallenges
     }}>
       {children}
     </ChallengeContext.Provider>

@@ -21,7 +21,7 @@ interface ProfileScreenProps {
 
 const ProfileScreen = ({ onFollowersClick, onFollowingClick, setActiveView }: ProfileScreenProps) => {
   const { user, logout, updateUser } = useAuth();
-  const { challenges, getUserChallenges } = useChallenges();
+  const { challenges, getUserChallenges, getUserJoinedChallenges } = useChallenges();
   const { tournaments, getUserTournaments } = useTournaments();
   const { getUserTeams } = useTeams();
   const [isEditing, setIsEditing] = useState(false);
@@ -45,6 +45,8 @@ const ProfileScreen = ({ onFollowersClick, onFollowingClick, setActiveView }: Pr
 
   // Get user's challenges, tournaments, and teams
   const userChallenges = user ? getUserChallenges(user.username) : [];
+  const userJoinedChallenges = user ? getUserJoinedChallenges(user.username) : [];
+  const allUserChallenges = [...userChallenges, ...userJoinedChallenges];
   const userTournaments = user ? getUserTournaments(user.username) : [];
   const userTeams = user ? getUserTeams(user.username) : [];
 
@@ -67,7 +69,7 @@ const ProfileScreen = ({ onFollowersClick, onFollowingClick, setActiveView }: Pr
   ];
 
   const stats = {
-    totalChallenges: userChallenges.length,
+    totalChallenges: allUserChallenges.length,
     wins: 8,
     losses: 7,
     winRate: 53,
@@ -326,12 +328,12 @@ const ProfileScreen = ({ onFollowersClick, onFollowingClick, setActiveView }: Pr
             </TabsContent>
 
             <TabsContent value="challenges" className="mt-4 space-y-3">
-              {userChallenges.length === 0 ? (
+              {allUserChallenges.length === 0 ? (
                 <div className="text-center py-8">
-                  <p className="text-gray-400">No challenges joined yet</p>
+                  <p className="text-gray-400">No challenges yet</p>
                 </div>
               ) : (
-                userChallenges.map((challenge) => (
+                allUserChallenges.map((challenge) => (
                   <div key={challenge.id} className="p-4 bg-gray-700 rounded-lg">
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center space-x-3">

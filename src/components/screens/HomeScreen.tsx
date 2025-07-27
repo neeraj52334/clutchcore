@@ -19,7 +19,7 @@ const HomeScreen = () => {
   const { toast } = useToast();
   const { user } = useAuth();
   const { balance, deductMoney } = useWallet();
-  const { challenges } = useChallenges();
+  const { challenges, addChallenge, joinChallenge } = useChallenges();
   const [userPosts, setUserPosts] = useState([
     {
       id: 1,
@@ -303,6 +303,58 @@ const HomeScreen = () => {
       }
       return part;
     });
+  };
+
+  const handleJoinChallenge = async (challenge: any) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to join challenges",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const entryPrice = challenge.entryPrices[0]?.price || 0;
+    
+    if (entryPrice === 0) {
+      // Free challenge
+      if (confirm(`Join ${challenge.creator}'s ${challenge.game} challenge?`)) {
+        joinChallenge(challenge.challengeId, user.username);
+        toast({
+          title: "Challenge Joined!",
+          description: `Successfully joined ${challenge.challengeId}`,
+        });
+        console.log('Successfully joined challenge:', challenge.challengeId);
+      }
+    } else {
+      // Paid challenge
+      if (balance >= entryPrice) {
+        if (confirm(`Pay ₹${entryPrice} to join ${challenge.creator}'s ${challenge.game} challenge?`)) {
+          try {
+            deductMoney(entryPrice, 'challenge_entry', challenge.challengeId);
+            joinChallenge(challenge.challengeId, user.username);
+            toast({
+              title: "Challenge Joined!",
+              description: `Successfully joined ${challenge.challengeId} for ₹${entryPrice}`,
+            });
+            console.log('Successfully joined challenge:', challenge.challengeId);
+          } catch (error) {
+            toast({
+              title: "Payment Failed",
+              description: "Failed to process payment",
+              variant: "destructive"
+            });
+          }
+        }
+      } else {
+        toast({
+          title: "Insufficient Balance",
+          description: "Please add funds to your wallet",
+          variant: "destructive"
+        });
+      }
+    }
   };
 
   return (
@@ -738,7 +790,11 @@ const HomeScreen = () => {
                         </span>
                       ))}
                     </div>
-                    <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                    <Button 
+                      size="sm" 
+                      className="bg-green-600 hover:bg-green-700"
+                      onClick={() => handleJoinChallenge(challenge)}
+                    >
                       Join
                     </Button>
                   </div>
