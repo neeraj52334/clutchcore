@@ -2,10 +2,14 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 export interface Tournament {
   id: string;
+  tournamentId: string; // Unique searchable ID
   name: string;
+  title: string; // Alias for name for backward compatibility
+  organizer: string; // Alias for createdBy
   game: string;
   prizePool: number;
   totalSlots: number;
+  maxParticipants: number; // Alias for totalSlots
   teamsPerGroup: number;
   registrationStart: string;
   registrationEnd: string;
@@ -109,10 +113,14 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
   const [tournaments, setTournaments] = useState<Tournament[]>([
     {
       id: 'T001',
+      tournamentId: 'TOUR_VL_2024_001',
       name: 'Summer Champions League',
+      title: 'Summer Champions League',
+      organizer: 'ClutchOwner',
       game: 'VALORANT',
       prizePool: 50000,
       totalSlots: 128,
+      maxParticipants: 128,
       teamsPerGroup: 8,
       registrationStart: '2024-01-15T00:00:00Z',
       registrationEnd: '2024-01-25T23:59:59Z',
@@ -129,10 +137,14 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
     },
     {
       id: 'T002',
+      tournamentId: 'TOUR_FF_2024_002',
       name: 'Free Fire Battle Royale',
+      title: 'Free Fire Battle Royale',
+      organizer: 'ClutchOwner',
       game: 'Free Fire',
       prizePool: 25000,
       totalSlots: 400,
+      maxParticipants: 400,
       teamsPerGroup: 12,
       registrationStart: '2024-01-20T00:00:00Z',
       registrationEnd: '2024-02-01T23:59:59Z',

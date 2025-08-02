@@ -5,6 +5,8 @@ import { Card, CardContent } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import { Button } from '../ui/button';
+import { useChallenges } from '../../contexts/ChallengeContext';
+import { useTournaments } from '../../contexts/TournamentContext';
 
 interface SearchScreenProps {
   onUserClick?: (user: any) => void;
@@ -14,6 +16,8 @@ const SearchScreen = ({ onUserClick }: SearchScreenProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilter, setSearchFilter] = useState('all');
   const [followedUsers, setFollowedUsers] = useState<Set<string>>(new Set());
+  const { challenges } = useChallenges();
+  const { tournaments } = useTournaments();
 
   const handleFollow = (username: string) => {
     setFollowedUsers(prev => {
@@ -32,24 +36,34 @@ const SearchScreen = ({ onUserClick }: SearchScreenProps) => {
     // In real app, this would navigate to chat screen
   };
 
-  const trendingChallenges = [
-    {
-      id: 1,
-      creator: "SkillzMaster",
-      game: "VALORANT",
-      type: "1v1",
-      entryFee: 200,
-      challengeId: "CH_VL_001"
-    },
-    {
-      id: 2,
-      creator: "ProGamer99",
-      game: "Free Fire",
-      type: "4v4",
-      entryFee: 100,
-      challengeId: "CH_FF_045"
-    }
-  ];
+  // Search function
+  const searchResults = () => {
+    if (!searchQuery.trim()) return { challenges: [], tournaments: [], users: [] };
+    
+    const query = searchQuery.toLowerCase();
+    
+    // Search challenges by ID, creator, or game
+    const filteredChallenges = challenges.filter(challenge => 
+      challenge.challengeId.toLowerCase().includes(query) ||
+      challenge.creator.toLowerCase().includes(query) ||
+      challenge.game.toLowerCase().includes(query)
+    );
+    
+    // Search tournaments by ID, title, or organizer
+    const filteredTournaments = tournaments.filter(tournament => 
+      tournament.tournamentId?.toLowerCase().includes(query) ||
+      tournament.title.toLowerCase().includes(query) ||
+      tournament.organizer.toLowerCase().includes(query)
+    );
+    
+    // Search users
+    const filteredUsers = sampleUsers.filter(user =>
+      user.username.toLowerCase().includes(query) ||
+      user.displayName.toLowerCase().includes(query)
+    );
+    
+    return { challenges: filteredChallenges, tournaments: filteredTournaments, users: filteredUsers };
+  };
 
   const sampleUsers = [
     {
@@ -94,22 +108,12 @@ const SearchScreen = ({ onUserClick }: SearchScreenProps) => {
     }
   ];
 
-  const popularTournaments = [
-    {
-      id: 1,
-      title: "VALORANT Championship",
-      organizer: "ESL India",
-      participants: 64,
-      prizePool: 50000
-    },
-    {
-      id: 2,
-      title: "Free Fire Masters",
-      organizer: "GameOn Esports",
-      participants: 89,
-      prizePool: 25000
-    }
-  ];
+  // Get user's challenges and joined challenges for display
+  const getUserChallengeIndicator = (username: string) => {
+    const userChallenges = challenges.filter(c => c.creator === username);
+    const joinedChallenges = challenges.filter(c => c.opponent === username);
+    return { created: userChallenges.length, joined: joinedChallenges.length };
+  };
 
   const featuredGames = [
     { name: "VALORANT", players: "2.5K", icon: "🎯" },
@@ -191,13 +195,140 @@ const SearchScreen = ({ onUserClick }: SearchScreenProps) => {
           <h2 className="text-lg font-semibold text-white">
             Search Results for "{searchQuery}"
           </h2>
-          <div className="text-center py-8">
-            <Search className="w-12 h-12 text-gray-600 mx-auto mb-4" />
-            <p className="text-gray-400">No results found</p>
-            <p className="text-sm text-gray-500 mt-2">
-              Try searching for usernames, tournament names, or challenge IDs
-            </p>
-          </div>
+          {(() => {
+            const results = searchResults();
+            const hasResults = results.challenges.length > 0 || results.tournaments.length > 0 || results.users.length > 0;
+            
+            if (!hasResults) {
+              return (
+                <div className="text-center py-8">
+                  <Search className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-400">No results found</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Try searching for usernames, tournament names, or challenge IDs
+                  </p>
+                </div>
+              );
+            }
+            
+            return (
+              <div className="space-y-6">
+                {/* Challenge Results */}
+                {results.challenges.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-md font-semibold text-white">Challenges</h3>
+                    {results.challenges.map((challenge) => (
+                      <Card key={challenge.id} className="bg-gray-800 border-gray-700">
+                        <CardContent className="p-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-3">
+                              <Avatar className="w-10 h-10">
+                                <AvatarFallback className="bg-blue-600 text-white">
+                                  {challenge.creator[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="font-medium text-white">{challenge.creator}</p>
+                                <p className="text-sm text-gray-400">ID: {challenge.challengeId}</p>
+                              </div>
+                            </div>
+                            <Badge variant="outline" className="text-blue-400 border-blue-400">
+                              {challenge.game}
+                            </Badge>
+                          </div>
+                          
+                          <div className="mt-3 flex items-center justify-between">
+                            <span className="text-sm text-gray-400">{challenge.type}</span>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-green-400 font-medium">
+                                ₹{challenge.entryPrices[0]?.price || 0}
+                              </span>
+                              <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                                Join
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Tournament Results */}
+                {results.tournaments.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-md font-semibold text-white">Tournaments</h3>
+                    {results.tournaments.map((tournament) => (
+                      <Card key={tournament.id} className="bg-gray-800 border-gray-700">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h3 className="font-bold text-white">{tournament.title}</h3>
+                              <p className="text-gray-400 text-sm">by {tournament.organizer}</p>
+                              {tournament.tournamentId && (
+                                <p className="text-xs text-gray-500">ID: {tournament.tournamentId}</p>
+                              )}
+                            </div>
+                            <div className="text-right">
+                              <p className="text-green-400 font-bold">₹{tournament.prizePool?.toLocaleString()}</p>
+                              <p className="text-gray-400 text-sm">{tournament.maxParticipants} slots</p>
+                            </div>
+                          </div>
+                          <Button className="w-full mt-3 bg-blue-600 hover:bg-blue-700">
+                            View Details
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                )}
+                
+                {/* User Results */}
+                {results.users.length > 0 && (
+                  <div className="space-y-3">
+                    <h3 className="text-md font-semibold text-white">Users</h3>
+                    {results.users.map((user) => {
+                      const challengeStats = getUserChallengeIndicator(user.username);
+                      return (
+                        <Card key={user.username} className="bg-gray-800 border-gray-700">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div 
+                                className="flex items-center space-x-3 flex-1 cursor-pointer"
+                                onClick={() => onUserClick?.(user)}
+                              >
+                                <Avatar className="w-12 h-12">
+                                  <AvatarImage src={user.avatar} />
+                                  <AvatarFallback className="bg-purple-600 text-white">
+                                    {user.displayName[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <h3 className="font-medium text-white">{user.displayName}</h3>
+                                  <p className="text-sm text-gray-400">@{user.username}</p>
+                                  <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+                                    <span>{challengeStats.created} challenges created</span>
+                                    <span>{challengeStats.joined} joined</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Button 
+                                onClick={() => handleFollow(user.username)}
+                                variant={followedUsers.has(user.username) ? "outline" : "default"}
+                                size="sm"
+                              >
+                                {followedUsers.has(user.username) ? 'Following' : 'Follow'}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
       ) : (
         <>
@@ -233,6 +364,14 @@ const SearchScreen = ({ onUserClick }: SearchScreenProps) => {
                           <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
                             <span>{user.followers} followers</span>
                             <span>{user.following} following</span>
+                            {(() => {
+                              const challengeStats = getUserChallengeIndicator(user.username);
+                              return challengeStats.created > 0 || challengeStats.joined > 0 ? (
+                                <span className="text-blue-400">
+                                  {challengeStats.created} created, {challengeStats.joined} joined
+                                </span>
+                              ) : null;
+                            })()}
                           </div>
                         </div>
                       </div>
@@ -294,7 +433,7 @@ const SearchScreen = ({ onUserClick }: SearchScreenProps) => {
               Trending Challenges
             </h2>
             <div className="space-y-3">
-              {trendingChallenges.map((challenge) => (
+              {challenges.slice(0, 2).map((challenge) => (
                 <Card key={challenge.id} className="bg-gray-800 border-gray-700">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between">
@@ -317,7 +456,9 @@ const SearchScreen = ({ onUserClick }: SearchScreenProps) => {
                     <div className="mt-3 flex items-center justify-between">
                       <span className="text-sm text-gray-400">{challenge.type}</span>
                       <div className="flex items-center space-x-2">
-                        <span className="text-green-400 font-medium">₹{challenge.entryFee}</span>
+                        <span className="text-green-400 font-medium">
+                          ₹{challenge.entryPrices[0]?.price || 0}
+                        </span>
                         <Button size="sm" className="bg-green-600 hover:bg-green-700">
                           Join
                         </Button>
@@ -336,17 +477,20 @@ const SearchScreen = ({ onUserClick }: SearchScreenProps) => {
               Popular Tournaments
             </h2>
             <div className="space-y-3">
-              {popularTournaments.map((tournament) => (
+              {tournaments.slice(0, 2).map((tournament) => (
                 <Card key={tournament.id} className="bg-gray-800 border-gray-700">
                   <CardContent className="p-4">
                     <div className="flex justify-between items-start">
                       <div>
                         <h3 className="font-bold text-white">{tournament.title}</h3>
                         <p className="text-gray-400 text-sm">by {tournament.organizer}</p>
+                        {tournament.tournamentId && (
+                          <p className="text-xs text-gray-500">ID: {tournament.tournamentId}</p>
+                        )}
                       </div>
                       <div className="text-right">
-                        <p className="text-green-400 font-bold">₹{tournament.prizePool.toLocaleString()}</p>
-                        <p className="text-gray-400 text-sm">{tournament.participants} players</p>
+                        <p className="text-green-400 font-bold">₹{tournament.prizePool?.toLocaleString()}</p>
+                        <p className="text-gray-400 text-sm">{tournament.maxParticipants} slots</p>
                       </div>
                     </div>
                     <Button className="w-full mt-3 bg-blue-600 hover:bg-blue-700">

@@ -100,10 +100,14 @@ const TournamentCreation: React.FC<TournamentCreationProps> = ({ onBack }) => {
 
     const tournament: Tournament = {
       id: `T${Date.now()}`,
+      tournamentId: `TOUR_${formData.game.replace(/\s+/g, '').toUpperCase()}_${Date.now()}`,
       name: formData.name,
+      title: formData.name,
+      organizer: 'ClutchOwner', // Set default organizer, can be dynamic later
       game: formData.game,
       prizePool: Number(formData.prizePool),
       totalSlots: totalSlots,
+      maxParticipants: totalSlots,
       teamsPerGroup: teamsPerGroup,
       registrationStart: formData.registrationStart,
       registrationEnd: formData.registrationEnd,

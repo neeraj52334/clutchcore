@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { ArrowLeft, MessageCircle, UserPlus, UserCheck, Users, Trophy, Star } from 'lucide-react';
 import { useChallenges } from '../../contexts/ChallengeContext';
+import { useTournaments } from '../../contexts/TournamentContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -35,10 +36,13 @@ const UserProfileScreen = ({
   onFollowersClick, 
   onFollowingClick 
 }: UserProfileScreenProps) => {
-  const { getUserChallenges } = useChallenges();
+  const { getUserChallenges, getUserJoinedChallenges } = useChallenges();
+  const { getUserTournaments } = useTournaments();
   
-  // Get user's challenges from context
+  // Get user's challenges and tournaments from context
   const userChallenges = getUserChallenges(user.username);
+  const joinedChallenges = getUserJoinedChallenges(user.username);
+  const userTournaments = getUserTournaments(user.username);
   
   // Mock recent challenges for display (you can replace this with actual challenge history)
   const mockUserChallenges = [
@@ -214,14 +218,13 @@ const UserProfileScreen = ({
           </CardContent>
         </Card>
 
-        {/* Recent Challenges */}
+        {/* Created Challenges */}
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
-            <CardTitle className="text-white">Recent Challenges</CardTitle>
+            <CardTitle className="text-white">Created Challenges ({userChallenges.length})</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* Show actual user challenges */}
-            {userChallenges.map((challenge) => (
+            {userChallenges.length > 0 ? userChallenges.map((challenge) => (
               <div key={challenge.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <Badge variant="outline" className="text-blue-400 border-blue-400">
@@ -229,13 +232,14 @@ const UserProfileScreen = ({
                   </Badge>
                   <div>
                     <p className="text-white font-medium">{challenge.type}</p>
-                    <p className="text-sm text-gray-400">{challenge.createdAt}</p>
+                    <p className="text-sm text-gray-400">ID: {challenge.challengeId}</p>
+                    <p className="text-xs text-gray-500">{challenge.createdAt}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <Badge 
-                    variant={challenge.status === 'active' ? 'default' : 'secondary'}
-                    className={challenge.status === 'active' ? 'bg-green-600' : 'bg-yellow-600'}
+                    variant={challenge.status === 'accepted' ? 'default' : 'secondary'}
+                    className={challenge.status === 'accepted' ? 'bg-green-600' : 'bg-yellow-600'}
                   >
                     {challenge.status || 'Pending'}
                   </Badge>
@@ -248,33 +252,83 @@ const UserProfileScreen = ({
                   </div>
                 </div>
               </div>
-            ))}
-            
-            {/* Show mock challenges if no actual challenges */}
-            {userChallenges.length === 0 && mockUserChallenges.map((challenge) => (
+            )) : (
+              <p className="text-gray-400 text-center py-4">No challenges created yet</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Joined Challenges */}
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white">Joined Challenges ({joinedChallenges.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {joinedChallenges.length > 0 ? joinedChallenges.map((challenge) => (
               <div key={challenge.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <Badge variant="outline" className="text-blue-400 border-blue-400">
+                  <Badge variant="outline" className="text-purple-400 border-purple-400">
                     {challenge.game}
                   </Badge>
                   <div>
                     <p className="text-white font-medium">{challenge.type}</p>
-                    <p className="text-sm text-gray-400">{challenge.date}</p>
+                    <p className="text-sm text-gray-400">vs {challenge.creator}</p>
+                    <p className="text-xs text-gray-500">ID: {challenge.challengeId}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <Badge 
-                    variant={challenge.result === 'Won' ? 'default' : 'secondary'}
-                    className={challenge.result === 'Won' ? 'bg-green-600' : 'bg-red-600'}
+                    variant="default"
+                    className="bg-green-600"
                   >
-                    {challenge.result}
+                    Joined
                   </Badge>
-                  {challenge.prize > 0 && (
-                    <p className="text-green-400 text-sm font-medium mt-1">+₹{challenge.prize}</p>
-                  )}
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {challenge.entryPrices.map((entry, idx) => (
+                      <span key={idx} className="text-green-400 text-xs font-medium">
+                        ₹{entry.price}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-gray-400 text-center py-4">No challenges joined yet</p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Registered Tournaments */}
+        <Card className="bg-gray-800 border-gray-700">
+          <CardHeader>
+            <CardTitle className="text-white">Registered Tournaments ({userTournaments.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {userTournaments.length > 0 ? userTournaments.map((tournament) => (
+              <div key={tournament.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Badge variant="outline" className="text-yellow-400 border-yellow-400">
+                    {tournament.game}
+                  </Badge>
+                  <div>
+                    <p className="text-white font-medium">{tournament.name}</p>
+                    <p className="text-sm text-gray-400">ID: {tournament.tournamentId}</p>
+                    <p className="text-xs text-gray-500">{tournament.organizer}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <Badge 
+                    variant="default"
+                    className="bg-blue-600"
+                  >
+                    {tournament.status}
+                  </Badge>
+                  <p className="text-green-400 text-xs font-medium mt-1">₹{tournament.prizePool?.toLocaleString()}</p>
+                </div>
+              </div>
+            )) : (
+              <p className="text-gray-400 text-center py-4">No tournaments registered yet</p>
+            )}
           </CardContent>
         </Card>
       </div>
