@@ -21,6 +21,7 @@ const TournamentCreation: React.FC<TournamentCreationProps> = ({ onBack }) => {
   const [formData, setFormData] = useState({
     name: '',
     game: '',
+    mode: 'squad' as 'solo' | 'duo' | 'squad',
     prizePool: '',
     totalSlots: '',
     teamsPerGroup: '',
@@ -119,7 +120,7 @@ const TournamentCreation: React.FC<TournamentCreationProps> = ({ onBack }) => {
       registeredTeams: [],
       currentRound: 1,
       totalRounds: totalRounds,
-      mode: 'squad', // Default to squad for now, can be made configurable
+      mode: formData.mode,
       registeredPlayers: []
     };
 
@@ -191,6 +192,35 @@ const TournamentCreation: React.FC<TournamentCreationProps> = ({ onBack }) => {
                     </SelectContent>
                   </Select>
                   {errors.game && <p className="text-red-400 text-sm mt-1">{errors.game}</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="mode" className="text-white">Tournament Type</Label>
+                  <Select value={formData.mode} onValueChange={(value) => handleInputChange('mode', value)}>
+                    <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                      <SelectValue placeholder="Select tournament type" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-700 border-gray-600">
+                      <SelectItem value="solo" className="text-white">
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-2" />
+                          Solo (1 Player)
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="duo" className="text-white">
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-2" />
+                          Duo (2 Players)
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="squad" className="text-white">
+                        <div className="flex items-center">
+                          <Users className="w-4 h-4 mr-2" />
+                          Squad (4+ Players)
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div>

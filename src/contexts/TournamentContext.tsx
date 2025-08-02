@@ -22,7 +22,7 @@ export interface Tournament {
   groups?: TournamentGroup[];
   currentRound: number;
   totalRounds: number;
-  mode: 'solo' | 'squad';
+  mode: 'solo' | 'duo' | 'squad';
   registeredPlayers?: TournamentPlayer[]; // For solo tournaments
 }
 
