@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Trophy, Users, Calendar, DollarSign, Settings, Play, Crown } from 'lucide-react';
+import { ArrowLeft, Trophy, Users, Calendar, DollarSign, Settings, Play, Crown, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Progress } from '../ui/progress';
 import { Tournament } from '../../contexts/TournamentContext';
+import { useAuth } from '../../contexts/AuthContext';
+import TournamentBracketManager from './TournamentBracketManager';
 
 interface TournamentDetailsProps {
   tournament: Tournament;
@@ -13,7 +15,15 @@ interface TournamentDetailsProps {
 }
 
 const TournamentDetails: React.FC<TournamentDetailsProps> = ({ tournament, onBack }) => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
+  const [showManager, setShowManager] = useState(false);
+  
+  const isOwner = user?.username === tournament.createdBy || user?.role === 'community_admin' || user?.role === 'owner';
+  
+  if (showManager) {
+    return <TournamentBracketManager tournament={tournament} onBack={() => setShowManager(false)} />;
+  }
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -106,16 +116,30 @@ const TournamentDetails: React.FC<TournamentDetailsProps> = ({ tournament, onBac
               </div>
 
               <div className="mt-6 lg:mt-0 lg:ml-6">
-                {tournament.status === 'open' && (
-                  <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white w-full lg:w-auto">
-                    Register Team
-                  </Button>
-                )}
-                {tournament.status === 'live' && (
-                  <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white w-full lg:w-auto">
-                    <Play className="w-4 h-4 mr-2" />
-                    Join Live
-                  </Button>
+                {isOwner ? (
+                  <div className="flex space-x-2">
+                    <Button 
+                      onClick={() => setShowManager(true)}
+                      className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white"
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Manage Tournament
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    {tournament.status === 'open' && (
+                      <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white w-full lg:w-auto">
+                        Register Team
+                      </Button>
+                    )}
+                    {tournament.status === 'live' && (
+                      <Button className="bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white w-full lg:w-auto">
+                        <Play className="w-4 h-4 mr-2" />
+                        Join Live
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
             </div>
