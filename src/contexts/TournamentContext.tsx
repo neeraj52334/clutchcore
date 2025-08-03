@@ -90,7 +90,7 @@ interface TournamentContextType {
   registerPlayer: (tournamentId: string, player: TournamentPlayer) => void;
   getActiveTournaments: () => Tournament[];
   getUserTournaments: (username: string) => Tournament[];
-  createGroups: (tournamentId: string) => void;
+  createGroups: (tournamentId: string, numberOfGroups?: number) => void;
   updateMatchResult: (tournamentId: string, matchId: string, results: TeamResult[]) => void;
   addDemoTeams: (tournamentId: string) => void;
 }
@@ -129,7 +129,104 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
       status: 'open',
       createdBy: 'ClutchOwner',
       createdAt: '2024-01-10T12:00:00Z',
-      registeredTeams: [],
+      registeredTeams: [
+        {
+          id: 'team1',
+          name: 'Fire Legends',
+          captain: 'ProGamer1',
+          members: [
+            { username: 'ProGamer1', inGameName: 'FireLord' },
+            { username: 'Player2', inGameName: 'BlazeMaster' },
+            { username: 'Player3', inGameName: 'InfernoKing' },
+            { username: 'Player4', inGameName: 'FlameStrike' }
+          ],
+          registeredAt: '2024-01-15T10:00:00Z'
+        },
+        {
+          id: 'team2',
+          name: 'Storm Raiders',
+          captain: 'StormCaptain',
+          members: [
+            { username: 'StormCaptain', inGameName: 'ThunderBolt' },
+            { username: 'Lightning1', inGameName: 'LightningFast' },
+            { username: 'Thunder2', inGameName: 'StormBringer' },
+            { username: 'Rain3', inGameName: 'TempestFury' }
+          ],
+          registeredAt: '2024-01-15T11:00:00Z'
+        },
+        {
+          id: 'team3',
+          name: 'Shadow Wolves',
+          captain: 'AlphaWolf',
+          members: [
+            { username: 'AlphaWolf', inGameName: 'ShadowAlpha' },
+            { username: 'BetaWolf', inGameName: 'MoonHowl' },
+            { username: 'GammaWolf', inGameName: 'NightStalker' },
+            { username: 'DeltaWolf', inGameName: 'DarkHunter' }
+          ],
+          registeredAt: '2024-01-15T12:00:00Z'
+        },
+        {
+          id: 'team4',
+          name: 'Ice Breakers',
+          captain: 'FrostKing',
+          members: [
+            { username: 'FrostKing', inGameName: 'IceEmperor' },
+            { username: 'IceQueen', inGameName: 'CrystalShield' },
+            { username: 'Blizzard', inGameName: 'FrozenStorm' },
+            { username: 'Glacier', inGameName: 'IceShard' }
+          ],
+          registeredAt: '2024-01-15T13:00:00Z'
+        },
+        {
+          id: 'team5',
+          name: 'Venom Strikers',
+          captain: 'VenomLeader',
+          members: [
+            { username: 'VenomLeader', inGameName: 'ToxicFang' },
+            { username: 'Poison1', inGameName: 'DeadlyStrike' },
+            { username: 'Viper2', inGameName: 'VenomBite' },
+            { username: 'Cobra3', inGameName: 'LethalDose' }
+          ],
+          registeredAt: '2024-01-15T14:00:00Z'
+        },
+        {
+          id: 'team6',
+          name: 'Golden Eagles',
+          captain: 'EagleEye',
+          members: [
+            { username: 'EagleEye', inGameName: 'GoldenTalon' },
+            { username: 'Falcon1', inGameName: 'SkyHunter' },
+            { username: 'Hawk2', inGameName: 'WindRider' },
+            { username: 'Phoenix3', inGameName: 'FireBird' }
+          ],
+          registeredAt: '2024-01-15T15:00:00Z'
+        },
+        {
+          id: 'team7',
+          name: 'Cyber Ninjas',
+          captain: 'NinjaMaster',
+          members: [
+            { username: 'NinjaMaster', inGameName: 'SilentBlade' },
+            { username: 'Samurai1', inGameName: 'SteelEdge' },
+            { username: 'Ronin2', inGameName: 'GhostStrike' },
+            { username: 'Shinobi3', inGameName: 'ShadowStep' }
+          ],
+          registeredAt: '2024-01-15T16:00:00Z'
+        },
+        {
+          id: 'team8',
+          name: 'Titan Force',
+          captain: 'TitanLeader',
+          members: [
+            { username: 'TitanLeader', inGameName: 'IronGiant' },
+            { username: 'Steel1', inGameName: 'MetalCrush' },
+            { username: 'Chrome2', inGameName: 'TitanFist' },
+            { username: 'Alloy3', inGameName: 'HeavyMetal' }
+          ],
+          registeredAt: '2024-01-15T17:00:00Z'
+        }
+      ],
       currentRound: 1,
       totalRounds: 4,
       mode: 'squad',
@@ -209,49 +306,40 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
     });
   };
 
-  const createGroups = (tournamentId: string) => {
+  const createGroups = (tournamentId: string, numberOfGroups?: number) => {
     const tournament = tournaments.find(t => t.id === tournamentId);
     if (!tournament) return;
 
-    const totalGroups = Math.floor(tournament.registeredTeams.length / tournament.teamsPerGroup);
+    const teamsToAssign = tournament.registeredTeams;
+    const groupCount = numberOfGroups || Math.max(2, Math.ceil(teamsToAssign.length / tournament.teamsPerGroup));
     const groups: TournamentGroup[] = [];
 
-    for (let i = 0; i < totalGroups; i++) {
-      const startIndex = i * tournament.teamsPerGroup;
-      const groupTeams = tournament.registeredTeams.slice(startIndex, startIndex + tournament.teamsPerGroup);
-      
+    // Shuffle teams for random distribution
+    const shuffledTeams = [...teamsToAssign].sort(() => Math.random() - 0.5);
+
+    // Create groups with balanced team distribution
+    for (let i = 0; i < groupCount; i++) {
       groups.push({
         id: `G${i + 1}`,
-        name: `Group ${i + 1}`,
-        teams: groupTeams,
+        name: `Group ${String.fromCharCode(65 + i)}`, // Group A, B, C, etc.
+        teams: [],
         matches: [],
-        standings: groupTeams.map((team, index) => ({
-          teamId: team.id,
-          teamName: team.name,
-          points: 0,
-          matches: 0,
-          position: index + 1
-        }))
+        standings: []
       });
     }
 
-    // Handle remaining teams
-    const remainingTeams = tournament.registeredTeams.slice(totalGroups * tournament.teamsPerGroup);
-    if (remainingTeams.length > 0) {
-      groups.push({
-        id: `G${totalGroups + 1}`,
-        name: `Group ${totalGroups + 1}`,
-        teams: remainingTeams,
-        matches: [],
-        standings: remainingTeams.map((team, index) => ({
-          teamId: team.id,
-          teamName: team.name,
-          points: 0,
-          matches: 0,
-          position: index + 1
-        }))
+    // Distribute teams evenly across groups
+    shuffledTeams.forEach((team, index) => {
+      const groupIndex = index % groupCount;
+      groups[groupIndex].teams.push(team);
+      groups[groupIndex].standings.push({
+        teamId: team.id,
+        teamName: team.name,
+        points: 0,
+        matches: 0,
+        position: groups[groupIndex].teams.length
       });
-    }
+    });
 
     updateTournament(tournamentId, { 
       groups, 

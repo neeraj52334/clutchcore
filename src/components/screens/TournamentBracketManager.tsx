@@ -45,7 +45,7 @@ const TournamentBracketManager: React.FC<TournamentBracketManagerProps> = ({ tou
   const handleCreateGroups = () => {
     if (assignmentType === 'auto') {
       // Auto-assign teams to groups
-      createGroups(tournament.id);
+      createGroups(tournament.id, numberOfGroups);
       toast({
         title: "Groups Created Successfully!",
         description: `${numberOfGroups} groups created with automatic team assignment`
@@ -80,28 +80,35 @@ const TournamentBracketManager: React.FC<TournamentBracketManagerProps> = ({ tou
     if (!tournament.groups) return;
     
     const updatedGroups = tournament.groups.map(group => {
-      // Remove team from all groups first
+      // Remove team from all groups first (both teams and standings)
       const filteredTeams = group.teams.filter(team => team.id !== teamId);
+      const filteredStandings = group.standings.filter(s => s.teamId !== teamId);
       
       if (group.id === groupId) {
         // Add team to selected group
         const team = tournament.registeredTeams.find(t => t.id === teamId);
         if (team) {
+          const newStanding = {
+            teamId: team.id,
+            teamName: team.name,
+            points: 0,
+            matches: 0,
+            position: filteredTeams.length + 1
+          };
+          
           return {
             ...group,
             teams: [...filteredTeams, team],
-            standings: [...group.standings.filter(s => s.teamId !== teamId), {
-              teamId: team.id,
-              teamName: team.name,
-              points: 0,
-              matches: 0,
-              position: filteredTeams.length + 1
-            }]
+            standings: [...filteredStandings, newStanding]
           };
         }
       }
       
-      return { ...group, teams: filteredTeams };
+      return { 
+        ...group, 
+        teams: filteredTeams,
+        standings: filteredStandings
+      };
     });
     
     updateTournament(tournament.id, { groups: updatedGroups });
@@ -325,55 +332,107 @@ const TournamentBracketManager: React.FC<TournamentBracketManagerProps> = ({ tou
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {tournament.groups.map((group) => (
-                  <Card key={group.id} className="bg-gray-800/50 border-gray-700">
+              <div className="space-y-6">
+                {/* Unassigned Teams (always show if teams are not assigned to groups) */}
+                {tournament.registeredTeams.some(team => !tournament.groups?.some(group => group.teams.some(t => t.id === team.id))) && (
+                  <Card className="bg-gray-800/50 border-gray-700">
                     <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-white">{group.name}</CardTitle>
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setSelectedGroup(group);
-                              setShowAnnouncementDialog(true);
-                            }}
-                            className="bg-blue-600 hover:bg-blue-700"
-                          >
-                            <MessageSquare className="w-4 h-4 mr-1" />
-                            Announce
-                          </Button>
-                        </div>
-                      </div>
+                      <CardTitle className="text-white">Unassigned Teams</CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <div className="space-y-3">
-                        {group.teams.length === 0 ? (
-                          <p className="text-gray-400 text-center py-4">No teams assigned</p>
-                        ) : (
-                          group.teams.map((team) => (
-                            <div key={team.id} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
-                              <div>
-                                <h4 className="text-white font-medium">{team.name}</h4>
-                                <p className="text-gray-400 text-sm">Captain: {team.captain}</p>
-                              </div>
-                              <Badge variant="outline">
-                                #{group.standings.find(s => s.teamId === team.id)?.position || '-'}
-                              </Badge>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {tournament.registeredTeams
+                          .filter(team => !tournament.groups?.some(group => group.teams.some(t => t.id === team.id)))
+                          .map((team) => (
+                          <div key={team.id} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+                            <div>
+                              <h4 className="text-white font-medium">{team.name}</h4>
+                              <p className="text-gray-400 text-sm">Captain: {team.captain}</p>
                             </div>
-                          ))
-                        )}
-                        
-                        {group.roomId && (
-                          <div className="mt-4 p-3 bg-green-600/20 border border-green-600/30 rounded-lg">
-                            <p className="text-green-400 text-sm font-medium">Room Details Sent</p>
-                            <p className="text-gray-300 text-xs">Room ID: {group.roomId}</p>
+                            <Select onValueChange={(groupId) => handleManualTeamAssignment(team.id, groupId)}>
+                              <SelectTrigger className="w-32 bg-gray-600 border-gray-500 text-white">
+                                <SelectValue placeholder="Assign" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-700 border-gray-600">
+                                {tournament.groups?.map(group => (
+                                  <SelectItem key={group.id} value={group.id} className="text-white">
+                                    {group.name}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
-                        )}
+                        ))}
                       </div>
                     </CardContent>
                   </Card>
-                ))}
+                )}
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {tournament.groups.map((group) => (
+                    <Card key={group.id} className="bg-gray-800/50 border-gray-700">
+                      <CardHeader>
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-white">{group.name}</CardTitle>
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setSelectedGroup(group);
+                                setShowAnnouncementDialog(true);
+                              }}
+                              className="bg-blue-600 hover:bg-blue-700"
+                            >
+                              <MessageSquare className="w-4 h-4 mr-1" />
+                              Announce
+                            </Button>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {group.teams.length === 0 ? (
+                            <p className="text-gray-400 text-center py-4">No teams assigned</p>
+                          ) : (
+                            group.teams.map((team) => (
+                              <div key={team.id} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+                                <div>
+                                  <h4 className="text-white font-medium">{team.name}</h4>
+                                  <p className="text-gray-400 text-sm">Captain: {team.captain}</p>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Badge variant="outline">
+                                    #{group.standings.find(s => s.teamId === team.id)?.position || '-'}
+                                  </Badge>
+                                  {/* Option to reassign team */}
+                                  <Select onValueChange={(groupId) => handleManualTeamAssignment(team.id, groupId)}>
+                                    <SelectTrigger className="w-24 bg-gray-600 border-gray-500 text-white">
+                                      <SelectValue placeholder="Move" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-gray-700 border-gray-600">
+                                      {tournament.groups?.map(g => (
+                                        <SelectItem key={g.id} value={g.id} className="text-white">
+                                          {g.name}
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                          
+                          {group.roomId && (
+                            <div className="mt-4 p-3 bg-green-600/20 border border-green-600/30 rounded-lg">
+                              <p className="text-green-400 text-sm font-medium">Room Details Sent</p>
+                              <p className="text-gray-300 text-xs">Room ID: {group.roomId}</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               </div>
             )}
           </TabsContent>
