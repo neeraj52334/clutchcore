@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Label } from '../ui/label';
 import { Tournament, TournamentGroup, useTournaments } from '../../contexts/TournamentContext';
 import { useToast } from '../../hooks/use-toast';
+import { RoomIdPass } from '../ui/room-id-pass';
 
 interface TournamentBracketManagerProps {
   tournament: Tournament;
@@ -18,7 +19,7 @@ interface TournamentBracketManagerProps {
 }
 
 const TournamentBracketManager: React.FC<TournamentBracketManagerProps> = ({ tournament, onBack }) => {
-  const { updateTournament, createGroups, updateMatchResult } = useTournaments();
+  const { updateTournament, createGroups, updateMatchResult, publishGroupRoom } = useTournaments();
   const { toast } = useToast();
   
   const [activeTab, setActiveTab] = useState('overview');
@@ -368,74 +369,67 @@ const TournamentBracketManager: React.FC<TournamentBracketManagerProps> = ({ tou
                   </Card>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-6">
                   {tournament.groups.map((group) => (
-                    <Card key={group.id} className="bg-gray-800/50 border-gray-700">
-                      <CardHeader>
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-white">{group.name}</CardTitle>
-                          <div className="flex space-x-2">
-                            <Button
-                              size="sm"
-                              onClick={() => {
-                                setSelectedGroup(group);
-                                setShowAnnouncementDialog(true);
-                              }}
-                              className="bg-blue-600 hover:bg-blue-700"
-                            >
-                              <MessageSquare className="w-4 h-4 mr-1" />
-                              Announce
-                            </Button>
+                    <div key={group.id} className="space-y-4">
+                      {/* Group Room ID & Password */}
+                      <RoomIdPass
+                        title={`${group.name} Room`}
+                        roomId={group.roomId}
+                        password={group.password}
+                        isPublished={group.isRoomPublished}
+                        isOwner={true}
+                        onPublish={(roomId, password) => publishGroupRoom(tournament.id, group.id, roomId, password)}
+                        className="lg:col-span-2"
+                      />
+                      
+                      {/* Group Details */}
+                      <Card className="bg-gray-800/50 border-gray-700">
+                        <CardHeader>
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-white">{group.name}</CardTitle>
                           </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {group.teams.length === 0 ? (
-                            <p className="text-gray-400 text-center py-4">No teams assigned</p>
-                          ) : (
-                            group.teams.map((team) => (
-                              <div key={team.id} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
-                                <div>
-                                  <h4 className="text-white font-medium">{team.name}</h4>
-                                  <p className="text-gray-400 text-sm">Captain: {team.captain}</p>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-3">
+                            {group.teams.length === 0 ? (
+                              <p className="text-gray-400 text-center py-4">No teams assigned</p>
+                            ) : (
+                              group.teams.map((team) => (
+                                <div key={team.id} className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+                                  <div>
+                                    <h4 className="text-white font-medium">{team.name}</h4>
+                                    <p className="text-gray-400 text-sm">Captain: {team.captain}</p>
+                                  </div>
+                                  <div className="flex items-center space-x-2">
+                                    <Badge variant="outline">
+                                      #{group.standings.find(s => s.teamId === team.id)?.position || '-'}
+                                    </Badge>
+                                    {/* Option to reassign team */}
+                                    <Select onValueChange={(groupId) => handleManualTeamAssignment(team.id, groupId)}>
+                                      <SelectTrigger className="w-24 bg-gray-600 border-gray-500 text-white">
+                                        <SelectValue placeholder="Move" />
+                                      </SelectTrigger>
+                                      <SelectContent className="bg-gray-700 border-gray-600">
+                                        {tournament.groups?.map(g => (
+                                          <SelectItem key={g.id} value={g.id} className="text-white">
+                                            {g.name}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
                                 </div>
-                                <div className="flex items-center space-x-2">
-                                  <Badge variant="outline">
-                                    #{group.standings.find(s => s.teamId === team.id)?.position || '-'}
-                                  </Badge>
-                                  {/* Option to reassign team */}
-                                  <Select onValueChange={(groupId) => handleManualTeamAssignment(team.id, groupId)}>
-                                    <SelectTrigger className="w-24 bg-gray-600 border-gray-500 text-white">
-                                      <SelectValue placeholder="Move" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-gray-700 border-gray-600">
-                                      {tournament.groups?.map(g => (
-                                        <SelectItem key={g.id} value={g.id} className="text-white">
-                                          {g.name}
-                                        </SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </div>
-                              </div>
-                            ))
-                          )}
-                          
-                          {group.roomId && (
-                            <div className="mt-4 p-3 bg-green-600/20 border border-green-600/30 rounded-lg">
-                              <p className="text-green-400 text-sm font-medium">Room Details Sent</p>
-                              <p className="text-gray-300 text-xs">Room ID: {group.roomId}</p>
-                            </div>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
+                              ))
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
                   ))}
                 </div>
-              </div>
-            )}
-          </TabsContent>
+              )}
+            </TabsContent>
 
           <TabsContent value="matches" className="mt-6">
             <Card className="bg-gray-800/50 border-gray-700">

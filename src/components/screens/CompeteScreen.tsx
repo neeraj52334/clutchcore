@@ -13,6 +13,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useChallenges } from '../../contexts/ChallengeContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { TournamentManager } from './TournamentManager';
+import { RoomIdPass } from '../ui/room-id-pass';
 
 const CompeteScreen = () => {
   const [activeTab, setActiveTab] = useState('browse');
@@ -33,7 +34,7 @@ const CompeteScreen = () => {
   
   const { deductMoney } = useWallet();
   const { user } = useAuth();
-  const { challenges, addChallenge, getUserChallenges } = useChallenges();
+  const { challenges, addChallenge, getUserChallenges, getUserJoinedChallenges, publishChallengeRoom } = useChallenges();
   const { addNotification } = useNotifications();
 
   // Game logo mapping
@@ -587,6 +588,20 @@ const CompeteScreen = () => {
                       <span className="text-white">{challenge.createdAt}</span>
                     </div>
                   </div>
+
+                  {/* Room ID & Password for registered challenges */}
+                  {registeredChallenges.has(challenge.challengeId) && (
+                    <div className="mt-4">
+                      <RoomIdPass
+                        title="Challenge Room"
+                        roomId={challenge.roomId}
+                        password={challenge.roomPassword}
+                        isPublished={challenge.isRoomPublished}
+                        isOwner={user?.username === challenge.creator}
+                        onPublish={(roomId, password) => publishChallengeRoom(challenge.challengeId, roomId, password)}
+                      />
+                    </div>
+                  )}
 
                   <div className="flex space-x-2 mt-4">
                     <Button 

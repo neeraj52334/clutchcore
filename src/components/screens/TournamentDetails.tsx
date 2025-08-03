@@ -5,9 +5,10 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Progress } from '../ui/progress';
-import { Tournament } from '../../contexts/TournamentContext';
+import { Tournament, useTournaments } from '../../contexts/TournamentContext';
 import { useAuth } from '../../contexts/AuthContext';
 import TournamentBracketManager from './TournamentBracketManager';
+import { RoomIdPass } from '../ui/room-id-pass';
 
 interface TournamentDetailsProps {
   tournament: Tournament;
@@ -16,10 +17,12 @@ interface TournamentDetailsProps {
 
 const TournamentDetails: React.FC<TournamentDetailsProps> = ({ tournament, onBack }) => {
   const { user } = useAuth();
+  const { publishTournamentRoom, publishGroupRoom, getUserTournaments } = useTournaments();
   const [activeTab, setActiveTab] = useState('overview');
   const [showManager, setShowManager] = useState(false);
   
   const isOwner = user?.username === tournament.createdBy || user?.role === 'community_admin' || user?.role === 'owner';
+  const isParticipant = user ? getUserTournaments(user.username).some(t => t.id === tournament.id) : false;
   
   if (showManager) {
     return <TournamentBracketManager tournament={tournament} onBack={() => setShowManager(false)} />;
@@ -171,6 +174,20 @@ const TournamentDetails: React.FC<TournamentDetailsProps> = ({ tournament, onBac
 
           <TabsContent value="overview" className="mt-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Room ID & Password for Tournament */}
+              {(isParticipant || isOwner) && (tournament.entryType === 'paid' || tournament.status === 'live') && (
+                <div className="lg:col-span-2">
+                  <RoomIdPass
+                    title="Tournament Room"
+                    roomId={tournament.roomId}
+                    password={tournament.roomPassword}
+                    isPublished={tournament.isRoomPublished}
+                    isOwner={isOwner}
+                    onPublish={(roomId, password) => publishTournamentRoom(tournament.id, roomId, password)}
+                  />
+                </div>
+              )}
+
               {/* Tournament Info */}
               <Card className="bg-gray-800/50 border-gray-700">
                 <CardHeader>

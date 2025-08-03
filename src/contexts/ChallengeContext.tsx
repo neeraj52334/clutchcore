@@ -13,6 +13,9 @@ interface Challenge {
   opponent?: string | null;
   avatar?: string;
   timePosted?: string;
+  roomId?: string;
+  roomPassword?: string;
+  isRoomPublished?: boolean;
 }
 
 interface ChallengeContextType {
@@ -21,6 +24,7 @@ interface ChallengeContextType {
   getUserChallenges: (username: string) => Challenge[];
   joinChallenge: (challengeId: string, username: string) => void;
   getUserJoinedChallenges: (username: string) => Challenge[];
+  publishChallengeRoom: (challengeId: string, roomId: string, password: string) => void;
 }
 
 const ChallengeContext = createContext<ChallengeContextType | undefined>(undefined);
@@ -89,13 +93,22 @@ export const ChallengeProvider: React.FC<ChallengeProviderProps> = ({ children }
     return challenges.filter(challenge => challenge.opponent === username);
   };
 
+  const publishChallengeRoom = (challengeId: string, roomId: string, password: string) => {
+    setChallenges(prev => prev.map(challenge => 
+      challenge.challengeId === challengeId 
+        ? { ...challenge, roomId, roomPassword: password, isRoomPublished: true }
+        : challenge
+    ));
+  };
+
   return (
     <ChallengeContext.Provider value={{
       challenges,
       addChallenge,
       getUserChallenges,
       joinChallenge,
-      getUserJoinedChallenges
+      getUserJoinedChallenges,
+      publishChallengeRoom
     }}>
       {children}
     </ChallengeContext.Provider>

@@ -24,6 +24,9 @@ export interface Tournament {
   totalRounds: number;
   mode: 'solo' | 'duo' | 'squad';
   registeredPlayers?: TournamentPlayer[]; // For solo tournaments
+  roomId?: string;
+  roomPassword?: string;
+  isRoomPublished?: boolean;
 }
 
 export interface TournamentPlayer {
@@ -56,6 +59,7 @@ export interface TournamentGroup {
   standings: TeamStanding[];
   roomId?: string;
   password?: string;
+  isRoomPublished?: boolean;
 }
 
 export interface TournamentMatch {
@@ -93,6 +97,8 @@ interface TournamentContextType {
   createGroups: (tournamentId: string, numberOfGroups?: number) => void;
   updateMatchResult: (tournamentId: string, matchId: string, results: TeamResult[]) => void;
   addDemoTeams: (tournamentId: string) => void;
+  publishTournamentRoom: (tournamentId: string, roomId: string, password: string) => void;
+  publishGroupRoom: (tournamentId: string, groupId: string, roomId: string, password: string) => void;
 }
 
 const TournamentContext = createContext<TournamentContextType | undefined>(undefined);
@@ -419,6 +425,28 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
     ));
   };
 
+  const publishTournamentRoom = (tournamentId: string, roomId: string, password: string) => {
+    updateTournament(tournamentId, { 
+      roomId, 
+      roomPassword: password, 
+      isRoomPublished: true 
+    });
+  };
+
+  const publishGroupRoom = (tournamentId: string, groupId: string, roomId: string, password: string) => {
+    setTournaments(prev => prev.map(tournament => {
+      if (tournament.id !== tournamentId) return tournament;
+
+      const updatedGroups = tournament.groups?.map(group => 
+        group.id === groupId 
+          ? { ...group, roomId, password, isRoomPublished: true }
+          : group
+      );
+
+      return { ...tournament, groups: updatedGroups };
+    }));
+  };
+
   return (
     <TournamentContext.Provider value={{
       tournaments,
@@ -430,7 +458,9 @@ export const TournamentProvider: React.FC<TournamentProviderProps> = ({ children
       getUserTournaments,
       createGroups,
       updateMatchResult,
-      addDemoTeams
+      addDemoTeams,
+      publishTournamentRoom,
+      publishGroupRoom
     }}>
       {children}
     </TournamentContext.Provider>
