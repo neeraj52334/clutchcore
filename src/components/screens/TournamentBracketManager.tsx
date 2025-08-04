@@ -428,8 +428,9 @@ const TournamentBracketManager: React.FC<TournamentBracketManagerProps> = ({ tou
                     </div>
                   ))}
                 </div>
-              )}
-            </TabsContent>
+              </div>
+            )}
+          </TabsContent>
 
           <TabsContent value="matches" className="mt-6">
             <Card className="bg-gray-800/50 border-gray-700">
