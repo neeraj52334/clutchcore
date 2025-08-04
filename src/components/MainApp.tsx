@@ -18,7 +18,7 @@ import PHostRequestsScreen from './screens/PHostRequestsScreen';
 import UserProfileScreen from './screens/UserProfileScreen';
 import FollowListScreen from './screens/FollowListScreen';
 import OwnerDashboard from './screens/OwnerDashboard';
-import TournamentScreen from './screens/TournamentScreen';
+
 import TeamsScreen from './screens/TeamsScreen';
 import NotificationsScreen from './screens/NotificationsScreen';
 
@@ -141,8 +141,6 @@ const MainApp = () => {
             return <SearchScreen onUserClick={handleUserClick} />;
           case 'compete':
             return <CompeteScreen />;
-          case 'tournaments':
-            return <TournamentScreen />;
           case 'teams':
             return <TeamsScreen />;
           case 'notifications':
