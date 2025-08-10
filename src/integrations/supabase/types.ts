@@ -14,7 +14,189 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      disputes: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          match_number: number | null
+          reason: string
+          reported_by: string
+          resolution: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          match_number?: number | null
+          reason: string
+          reported_by: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          match_number?: number | null
+          reason?: string
+          reported_by?: string
+          resolution?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "disputes_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "mahasagram_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mahasagram_tournaments: {
+        Row: {
+          created_at: string
+          created_by: string
+          format: string
+          game: string
+          id: string
+          kill_points: number | null
+          max_teams: number | null
+          min_teams: number
+          name: string
+          placement_points: string | null
+          prize_pool: number
+          prize_pool_type: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          format: string
+          game: string
+          id?: string
+          kill_points?: number | null
+          max_teams?: number | null
+          min_teams?: number
+          name: string
+          placement_points?: string | null
+          prize_pool: number
+          prize_pool_type: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          format?: string
+          game?: string
+          id?: string
+          kill_points?: number | null
+          max_teams?: number | null
+          min_teams?: number
+          name?: string
+          placement_points?: string | null
+          prize_pool?: number
+          prize_pool_type?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      match_results: {
+        Row: {
+          created_at: string
+          id: string
+          kills: number
+          match_number: number
+          placement: number
+          placement_points: number
+          submitted_by: string
+          team_name: string
+          total_points: number | null
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kills?: number
+          match_number: number
+          placement: number
+          placement_points?: number
+          submitted_by: string
+          team_name: string
+          total_points?: number | null
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kills?: number
+          match_number?: number
+          placement?: number
+          placement_points?: number
+          submitted_by?: string
+          team_name?: string
+          total_points?: number | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_results_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "mahasagram_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_managers: {
+        Row: {
+          assigned_at: string
+          assigned_by: string
+          id: string
+          manager_id: string
+          permissions: string
+          tournament_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by: string
+          id?: string
+          manager_id: string
+          permissions?: string
+          tournament_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string
+          id?: string
+          manager_id?: string
+          permissions?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_managers_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "mahasagram_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
