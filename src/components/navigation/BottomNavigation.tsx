@@ -1,5 +1,5 @@
 
-import { Home, Search, Swords, User, FileText } from 'lucide-react';
+import { Home, Search, Swords, User, FileText, Trophy } from 'lucide-react';
 import { Button } from '../ui/button';
 
 interface BottomNavigationProps {
@@ -16,9 +16,13 @@ const BottomNavigation = ({ activeTab, onTabChange, userRole }: BottomNavigation
     { id: 'profile', icon: User, label: 'Profile' },
   ];
 
-  // Add role-specific tab
+  // Add role-specific tabs
   if (userRole === 'p_host') {
     tabs.push({ id: 'requests', icon: FileText, label: 'Requests' });
+  }
+  
+  if (userRole === 'owner') {
+    tabs.splice(3, 0, { id: 'mahasagram', icon: Trophy, label: 'Mahasagram' });
   }
 
   return (
