@@ -99,10 +99,6 @@ const MainApp = () => {
   };
 
   const renderScreen = () => {
-    // Owner Dashboard - full screen replacement
-    if (user?.role === 'owner' && activeTab === 'profile') {
-      return <OwnerDashboard />;
-    }
 
     switch (currentScreen) {
       case 'messages':
@@ -148,6 +144,10 @@ const MainApp = () => {
           case 'notifications':
             return <NotificationsScreen />;
           case 'profile':
+            // Show OwnerDashboard for owners, regular ProfileScreen for others
+            if (user?.role === 'owner') {
+              return <OwnerDashboard />;
+            }
             return (
               <ProfileScreen
                 onFollowersClick={handleFollowersClick}
@@ -169,28 +169,22 @@ const MainApp = () => {
         <TeamProvider>
           <NotificationProvider>
             <div className="min-h-screen bg-gray-900 text-white">
-            {/* Hide top navigation for owner dashboard */}
-            {!(user?.role === 'owner' && activeTab === 'profile') && (
-              <TopNavigation 
-                onMessagesClick={() => setCurrentScreen('messages')}
-                onWalletClick={() => setCurrentScreen('wallet')}
-                onNotificationsClick={() => setActiveTab('notifications')}
-                onTeamsClick={() => setActiveTab('teams')}
-              />
-            )}
+            <TopNavigation 
+              onMessagesClick={() => setCurrentScreen('messages')}
+              onWalletClick={() => setCurrentScreen('wallet')}
+              onNotificationsClick={() => setActiveTab('notifications')}
+              onTeamsClick={() => setActiveTab('teams')}
+            />
         
-        <main className={`${!(user?.role === 'owner' && activeTab === 'profile') ? 'pb-20 pt-16' : ''}`}>
+        <main className="pb-20 pt-16">
           {renderScreen()}
         </main>
 
-        {/* Hide bottom navigation for owner dashboard */}
-        {!(user?.role === 'owner' && activeTab === 'profile') && (
-          <BottomNavigation 
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            userRole={user?.role || 'gamer'}
-          />
-         )}
+        <BottomNavigation 
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          userRole={user?.role || 'gamer'}
+        />
             </div>
             <Toaster />
           </NotificationProvider>
