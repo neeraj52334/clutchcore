@@ -21,9 +21,6 @@ const BottomNavigation = ({ activeTab, onTabChange, userRole }: BottomNavigation
     tabs.push({ id: 'requests', icon: FileText, label: 'Requests' });
   }
   
-  if (userRole === 'owner') {
-    tabs.splice(3, 0, { id: 'mahasagram', icon: Trophy, label: 'Mahasagram' });
-  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-sm border-t border-gray-800">
