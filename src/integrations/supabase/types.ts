@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -71,6 +71,7 @@ export type Database = {
           format: string
           game: string
           id: string
+          is_password_protected: boolean | null
           kill_points: number | null
           max_teams: number | null
           min_teams: number
@@ -79,6 +80,7 @@ export type Database = {
           prize_pool: number
           prize_pool_type: string
           status: string
+          tournament_password: string | null
           updated_at: string
         }
         Insert: {
@@ -87,6 +89,7 @@ export type Database = {
           format: string
           game: string
           id?: string
+          is_password_protected?: boolean | null
           kill_points?: number | null
           max_teams?: number | null
           min_teams?: number
@@ -95,6 +98,7 @@ export type Database = {
           prize_pool: number
           prize_pool_type: string
           status?: string
+          tournament_password?: string | null
           updated_at?: string
         }
         Update: {
@@ -103,6 +107,7 @@ export type Database = {
           format?: string
           game?: string
           id?: string
+          is_password_protected?: boolean | null
           kill_points?: number | null
           max_teams?: number | null
           min_teams?: number
@@ -111,6 +116,7 @@ export type Database = {
           prize_pool?: number
           prize_pool_type?: string
           status?: string
+          tournament_password?: string | null
           updated_at?: string
         }
         Relationships: []

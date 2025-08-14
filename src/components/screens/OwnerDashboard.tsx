@@ -22,7 +22,7 @@ interface RoleAssignment {
 
 const OwnerDashboard = ({ onBack }: OwnerDashboardProps) => {
   const { logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'roles' | 'users'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'roles'>('overview');
   const [showRoleAssignment, setShowRoleAssignment] = useState(false);
   const [roleForm, setRoleForm] = useState({
     identifier: '',
@@ -129,24 +129,33 @@ const OwnerDashboard = ({ onBack }: OwnerDashboardProps) => {
 
       {/* Navigation Tabs */}
       <div className="bg-gray-800 border-b border-gray-700">
-        <div className="flex space-x-1 p-4">
-          {[
-            { id: 'overview', label: 'Overview', icon: Settings },
-            { id: 'roles', label: 'Role Management', icon: Shield },
-            { id: 'users', label: 'User Management', icon: Users }
-          ].map((tab) => (
-            <Button
-              key={tab.id}
-              variant={activeTab === tab.id ? 'default' : 'ghost'}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`flex items-center space-x-2 ${
-                activeTab === tab.id ? 'bg-blue-600' : 'text-gray-400'
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-            </Button>
-          ))}
+        <div className="flex items-center justify-between p-4">
+          <div className="flex space-x-1">
+            {[
+              { id: 'overview', label: 'Overview', icon: Settings },
+              { id: 'roles', label: 'Role Management', icon: Shield }
+            ].map((tab) => (
+              <Button
+                key={tab.id}
+                variant={activeTab === tab.id ? 'default' : 'ghost'}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex items-center space-x-2 ${
+                  activeTab === tab.id ? 'bg-blue-600' : 'text-gray-400'
+                }`}
+              >
+                <tab.icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </Button>
+            ))}
+          </div>
+          <Button 
+            onClick={logout}
+            variant="outline"
+            className="flex items-center space-x-2 border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Logout</span>
+          </Button>
         </div>
       </div>
 
@@ -266,69 +275,6 @@ const OwnerDashboard = ({ onBack }: OwnerDashboardProps) => {
           </>
         )}
 
-        {activeTab === 'users' && (
-          <>
-            {/* User Management Header */}
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">User Management</h2>
-              <div className="flex items-center space-x-2">
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                  <Input 
-                    placeholder="Search users..."
-                    className="pl-10 bg-gray-700 border-gray-600 text-white"
-                  />
-                </div>
-                <Button 
-                  onClick={logout}
-                  variant="outline"
-                  className="flex items-center space-x-2 border-red-600 text-red-400 hover:bg-red-600 hover:text-white"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Logout</span>
-                </Button>
-              </div>
-            </div>
-
-            {/* Users List */}
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white">All Users</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {recentUsers.map((user) => (
-                  <div key={user.id} className="flex items-center justify-between p-3 bg-gray-700 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <Avatar className="w-10 h-10">
-                        <AvatarImage src={user.avatar} />
-                        <AvatarFallback className="bg-blue-600 text-white">
-                          {user.username[0]?.toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-white font-medium">{user.username}</p>
-                        <p className="text-gray-400 text-sm">{user.email}</p>
-                        <p className="text-gray-500 text-xs">Joined {user.joinedAt}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge className={
-                        user.role === 'gamer' ? 'bg-gray-600' :
-                        user.role === 'community_admin' ? 'bg-blue-600' : 'bg-purple-600'
-                      }>
-                        {user.role === 'gamer' ? 'Gamer' : 
-                         user.role === 'community_admin' ? 'Community Admin' : 'P-Host'}
-                      </Badge>
-                      <Badge className={user.status === 'active' ? 'bg-green-600' : 'bg-red-600'}>
-                        {user.status}
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          </>
-        )}
       </div>
 
       {/* Role Assignment Modal */}

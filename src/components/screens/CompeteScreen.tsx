@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, Swords, Trophy, Users, Clock, Target, Filter, MessageCircle, X } from 'lucide-react';
+import { Plus, Swords, Trophy, Users, Clock, Target, Filter, MessageCircle, X, Lock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -14,6 +14,7 @@ import { useChallenges } from '../../contexts/ChallengeContext';
 import { useNotifications } from '../../contexts/NotificationContext';
 import { TournamentManager } from './TournamentManager';
 import { RoomIdPass } from '../ui/room-id-pass';
+import { TournamentPasswordDialog } from '../ui/tournament-password-dialog';
 
 const CompeteScreen = () => {
   const [activeTab, setActiveTab] = useState('browse');
@@ -25,6 +26,8 @@ const CompeteScreen = () => {
   const [showTournamentManager, setShowTournamentManager] = useState(false);
   const [registeredTournaments, setRegisteredTournaments] = useState(new Set());
   const [registeredChallenges, setRegisteredChallenges] = useState(new Set());
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [pendingTournament, setPendingTournament] = useState(null);
   const [challengeForm, setChallengeForm] = useState({
     game: '',
     type: '',
@@ -87,7 +90,8 @@ const CompeteScreen = () => {
       maxParticipants: 128,
       deadline: "2 days left",
       status: "paid",
-      banner: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=200&fit=crop"
+      banner: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=200&fit=crop",
+      isPasswordProtected: true
     },
     {
       id: 2,
@@ -102,7 +106,8 @@ const CompeteScreen = () => {
       maxParticipants: 100,
       deadline: "5 hours left",
       status: "free",
-      banner: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=200&fit=crop"
+      banner: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=200&fit=crop",
+      isPasswordProtected: false
     }
   ];
 
@@ -121,7 +126,8 @@ const CompeteScreen = () => {
       maxParticipants: 50,
       deadline: "1 day left",
       status: "paid",
-      banner: "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=800&h=200&fit=crop"
+      banner: "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=800&h=200&fit=crop",
+      isPasswordProtected: false
     },
     {
       id: 4,
@@ -136,7 +142,8 @@ const CompeteScreen = () => {
       maxParticipants: 64,
       deadline: "3 days left",
       status: "paid",
-      banner: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&h=200&fit=crop"
+      banner: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800&h=200&fit=crop",
+      isPasswordProtected: false
     },
     {
       id: 5,
@@ -151,7 +158,8 @@ const CompeteScreen = () => {
       maxParticipants: 200,
       deadline: "6 hours left",
       status: "free",
-      banner: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=200&fit=crop"
+      banner: "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=800&h=200&fit=crop",
+      isPasswordProtected: false
     }
   ];
 
@@ -292,6 +300,18 @@ const CompeteScreen = () => {
       return;
     }
 
+    // Check if tournament is password protected
+    if (tournament.isPasswordProtected) {
+      setPendingTournament(tournament);
+      setShowPasswordDialog(true);
+      return;
+    }
+
+    // Proceed with normal registration
+    proceedWithRegistration(tournament);
+  };
+
+  const proceedWithRegistration = async (tournament: any) => {
     if (tournament.entryFee === 0) {
       // Free tournament - show confirmation
       if (confirm(`Confirm registration for ${tournament.title}?`)) {
@@ -329,6 +349,27 @@ const CompeteScreen = () => {
         }
       }
     }
+  };
+
+  const handlePasswordSubmit = (password: string) => {
+    // In a real app, this would verify the password against the database
+    // For now, we'll simulate password verification
+    const correctPassword = "alpha beta gamma delta"; // Mock password for demo
+    
+    if (password === correctPassword) {
+      setShowPasswordDialog(false);
+      if (pendingTournament) {
+        proceedWithRegistration(pendingTournament);
+        setPendingTournament(null);
+      }
+    } else {
+      alert('Incorrect password. Please try again.');
+    }
+  };
+
+  const handlePasswordDialogClose = () => {
+    setShowPasswordDialog(false);
+    setPendingTournament(null);
   };
 
   const handleMatchChat = (item: any, type: 'challenge' | 'tournament') => {
@@ -893,9 +934,15 @@ const CompeteScreen = () => {
                       <Clock className="w-3 h-3 mr-1" />
                       {tournament.deadline}
                     </Badge>
-                    <Badge className={tournament.status === 'free' ? 'bg-green-500' : 'bg-yellow-500'}>
-                      {tournament.status === 'free' ? 'FREE' : 'PAID'}
-                    </Badge>
+                     <Badge className={tournament.status === 'free' ? 'bg-green-500' : 'bg-yellow-500'}>
+                       {tournament.status === 'free' ? 'FREE' : 'PAID'}
+                     </Badge>
+                     {tournament.isPasswordProtected && (
+                       <Badge className="bg-orange-500 text-white">
+                         <Lock className="w-3 h-3 mr-1" />
+                         PROTECTED
+                       </Badge>
+                     )}
                   </div>
                   <div className="absolute top-2 left-2">
                     <span className="text-2xl">{gameLogos[tournament.game] || '🎮'}</span>
@@ -921,7 +968,13 @@ const CompeteScreen = () => {
                     <Badge variant="outline" className="text-blue-400 border-blue-400">
                       {tournament.type}
                     </Badge>
-                    <span>Entry: {tournament.entryFee === 0 ? 'Free' : `₹${tournament.entryFee}`}</span>
+                     <span>Entry: {tournament.entryFee === 0 ? 'Free' : `₹${tournament.entryFee}`}</span>
+                     {tournament.isPasswordProtected && (
+                       <Badge variant="outline" className="text-orange-400 border-orange-400">
+                         <Lock className="w-3 h-3 mr-1" />
+                         Protected
+                       </Badge>
+                     )}
                   </div>
                   
                   <div className="w-full bg-gray-700 rounded-full h-2 mb-3">
@@ -972,6 +1025,14 @@ const CompeteScreen = () => {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Tournament Password Dialog */}
+      <TournamentPasswordDialog
+        isOpen={showPasswordDialog}
+        onClose={handlePasswordDialogClose}
+        onSubmit={handlePasswordSubmit}
+        tournamentName={pendingTournament?.title || ''}
+      />
     </div>
   );
 };

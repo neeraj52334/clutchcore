@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Calendar, Users, Trophy, DollarSign, Clock } from 'lucide-react';
+import { ArrowLeft, Calendar, Users, Trophy, DollarSign, Clock, Lock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -29,7 +29,9 @@ const TournamentCreation: React.FC<TournamentCreationProps> = ({ onBack }) => {
     registrationEnd: '',
     entryType: 'free' as 'free' | 'paid',
     entryFee: '',
-    description: ''
+    description: '',
+    isPasswordProtected: false,
+    password: ''
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -43,7 +45,7 @@ const TournamentCreation: React.FC<TournamentCreationProps> = ({ onBack }) => {
     'FIFA Mobile'
   ];
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -69,6 +71,14 @@ const TournamentCreation: React.FC<TournamentCreationProps> = ({ onBack }) => {
     
     if (formData.entryType === 'paid' && (!formData.entryFee || isNaN(Number(formData.entryFee)))) {
       newErrors.entryFee = 'Entry fee is required for paid tournaments';
+    }
+    
+    if (formData.isPasswordProtected && !formData.password.trim()) {
+      newErrors.password = 'Password is required for protected tournaments';
+    }
+    
+    if (formData.isPasswordProtected && formData.password.trim().split(' ').length !== 4) {
+      newErrors.password = 'Password must be exactly 4 words';
     }
 
     // Date validation
@@ -368,6 +378,37 @@ const TournamentCreation: React.FC<TournamentCreationProps> = ({ onBack }) => {
                     {errors.entryFee && <p className="text-red-400 text-sm mt-1">{errors.entryFee}</p>}
                   </div>
                 )}
+                
+                <div className="border-t border-gray-600 pt-4">
+                  <div className="flex items-center space-x-3">
+                    <Switch
+                      checked={formData.isPasswordProtected}
+                      onCheckedChange={(checked) => 
+                        handleInputChange('isPasswordProtected', checked)
+                      }
+                    />
+                    <Label className="text-white flex items-center">
+                      <Lock className="w-4 h-4 mr-2" />
+                      Password Protected Tournament
+                    </Label>
+                  </div>
+                  
+                  {formData.isPasswordProtected && (
+                    <div className="mt-3">
+                      <Label htmlFor="password" className="text-white">4-Word Password</Label>
+                      <Input
+                        id="password"
+                        type="text"
+                        value={formData.password}
+                        onChange={(e) => handleInputChange('password', e.target.value)}
+                        placeholder="alpha beta gamma delta"
+                        className="bg-gray-700 border-gray-600 text-white"
+                      />
+                      <p className="text-gray-400 text-xs mt-1">Enter exactly 4 words separated by spaces</p>
+                      {errors.password && <p className="text-red-400 text-sm mt-1">{errors.password}</p>}
+                    </div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
