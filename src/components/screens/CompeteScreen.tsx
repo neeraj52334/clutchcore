@@ -215,7 +215,7 @@ const CompeteScreen = () => {
       
       setChallengeForm({ game: '', type: '', entryPrices: [{ price: '', selected: false }], rules: '' });
       setShowCreateForm(false);
-      setActiveTab('my-challenges');
+      setActiveTab('browse');
     } catch (error) {
       console.error('Failed to create challenge:', error);
       alert('Error creating challenge');
@@ -566,10 +566,7 @@ const CompeteScreen = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-gray-800">
-          <TabsTrigger value="my-challenges" className="text-white data-[state=active]:bg-blue-600">
-            My Challenges
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 bg-gray-800">
           <TabsTrigger value="browse" className="text-white data-[state=active]:bg-blue-600">
             Browse Challenges
           </TabsTrigger>
@@ -578,89 +575,6 @@ const CompeteScreen = () => {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="my-challenges" className="space-y-4">
-          <div className="space-y-3">
-            {myChallenges.map((challenge) => (
-              <Card key={challenge.id} className="bg-gray-800 border-gray-700 overflow-hidden">
-                <div className="relative h-20 bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
-                  <span className="text-3xl">{getGameIcon(challenge.game)}</span>
-                  <div className="absolute top-2 right-2">
-                    <Badge 
-                      variant={challenge.status === 'active' ? 'default' : 'secondary'}
-                      className={challenge.status === 'active' ? 'bg-green-600' : 'bg-yellow-600'}
-                    >
-                      {challenge.status}
-                    </Badge>
-                  </div>
-                </div>
-                <CardContent className="p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center space-x-2">
-                      <Badge variant="outline" className="text-blue-400 border-blue-400">
-                        {challenge.game}
-                      </Badge>
-                    </div>
-                          <div className="flex flex-wrap gap-1">
-                            {challenge.entryPrices.map((entry, idx) => (
-                              <span key={idx} className="text-green-400 font-medium text-xs">
-                                ₹{entry.price}
-                              </span>
-                            ))}
-                          </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Challenge ID:</span>
-                      <span className="text-white font-mono">{challenge.challengeId}</span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Type:</span>
-                      <span className="text-white">{challenge.type}</span>
-                    </div>
-                    {challenge.opponent && (
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-400">Opponent:</span>
-                        <span className="text-white">{challenge.opponent}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-400">Created:</span>
-                      <span className="text-white">{challenge.createdAt}</span>
-                    </div>
-                  </div>
-
-                  {/* Room ID & Password for registered challenges */}
-                  {registeredChallenges.has(challenge.challengeId) && (
-                    <div className="mt-4">
-                      <RoomIdPass
-                        title="Challenge Room"
-                        roomId={challenge.roomId}
-                        password={challenge.roomPassword}
-                        isPublished={challenge.isRoomPublished}
-                        isOwner={user?.username === challenge.creator}
-                        onPublish={(roomId, password) => publishChallengeRoom(challenge.challengeId, roomId, password)}
-                      />
-                    </div>
-                  )}
-
-                  <div className="flex space-x-2 mt-4">
-                    <Button 
-                      className="flex-1 bg-blue-600 hover:bg-blue-700"
-                      onClick={() => handleMatchChat(challenge, 'challenge')}
-                    >
-                      <MessageCircle className="w-4 h-4 mr-1" />
-                      Match Chat
-                    </Button>
-                    <Button variant="outline" className="flex-1 border-gray-600 text-gray-400">
-                      Upload Result
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
 
         <TabsContent value="browse" className="space-y-4">
           {/* Game Filter Section */}

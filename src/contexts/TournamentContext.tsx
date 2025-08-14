@@ -27,6 +27,8 @@ export interface Tournament {
   roomId?: string;
   roomPassword?: string;
   isRoomPublished?: boolean;
+  isPasswordProtected?: boolean;
+  password?: string;
 }
 
 export interface TournamentPlayer {

@@ -131,7 +131,9 @@ const TournamentCreation: React.FC<TournamentCreationProps> = ({ onBack }) => {
       currentRound: 1,
       totalRounds: totalRounds,
       mode: formData.mode,
-      registeredPlayers: []
+      registeredPlayers: [],
+      isPasswordProtected: formData.isPasswordProtected,
+      password: formData.isPasswordProtected ? formData.password : undefined
     };
 
     addTournament(tournament);
