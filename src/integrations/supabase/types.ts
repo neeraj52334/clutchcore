@@ -14,6 +14,136 @@ export type Database = {
   }
   public: {
     Tables: {
+      challenge_chat: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          id: string
+          image_url: string | null
+          message: string | null
+          user_id: string
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          message?: string | null
+          user_id: string
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          message?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_chat_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenge_results: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          challenge_id: string
+          created_at: string
+          evidence_url: string | null
+          id: string
+          submitted_by: string
+          winner_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          challenge_id: string
+          created_at?: string
+          evidence_url?: string | null
+          id?: string
+          submitted_by: string
+          winner_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          challenge_id?: string
+          created_at?: string
+          evidence_url?: string | null
+          id?: string
+          submitted_by?: string
+          winner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_results_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenges: {
+        Row: {
+          challenge_id: string
+          created_at: string
+          creator_id: string
+          entry_fee: number
+          game: string
+          id: string
+          opponent_id: string | null
+          platform_fee: number | null
+          prize_amount: number | null
+          room_id: string | null
+          room_password: string | null
+          status: string
+          type: string
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          challenge_id: string
+          created_at?: string
+          creator_id: string
+          entry_fee: number
+          game: string
+          id?: string
+          opponent_id?: string | null
+          platform_fee?: number | null
+          prize_amount?: number | null
+          room_id?: string | null
+          room_password?: string | null
+          status?: string
+          type: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          challenge_id?: string
+          created_at?: string
+          creator_id?: string
+          entry_fee?: number
+          game?: string
+          id?: string
+          opponent_id?: string | null
+          platform_fee?: number | null
+          prize_amount?: number | null
+          room_id?: string | null
+          room_password?: string | null
+          status?: string
+          type?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Relationships: []
+      }
       disputes: {
         Row: {
           created_at: string

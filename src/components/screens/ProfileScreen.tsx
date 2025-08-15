@@ -283,18 +283,14 @@ const ProfileScreen = ({ onFollowersClick, onFollowingClick, setActiveView }: Pr
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-gray-700">
+            <TabsList className="grid w-full grid-cols-3 bg-gray-700">
               <TabsTrigger value="posts" className="data-[state=active]:bg-blue-600">
                 <MessageSquare className="w-4 h-4 mr-1" />
                 Posts
               </TabsTrigger>
-              <TabsTrigger value="challenges" className="data-[state=active]:bg-blue-600">
-                <Target className="w-4 h-4 mr-1" />
-                Challenges
-              </TabsTrigger>
-              <TabsTrigger value="matches" className="data-[state=active]:bg-blue-600">
-                <GamepadIcon className="w-4 h-4 mr-1" />
-                Matches
+              <TabsTrigger value="arena" className="data-[state=active]:bg-blue-600">
+                <Trophy className="w-4 h-4 mr-1" />
+                My Arena
               </TabsTrigger>
               <TabsTrigger value="teams" className="data-[state=active]:bg-blue-600">
                 <Users className="w-4 h-4 mr-1" />
@@ -327,119 +323,94 @@ const ProfileScreen = ({ onFollowersClick, onFollowingClick, setActiveView }: Pr
               )}
             </TabsContent>
 
-            <TabsContent value="challenges" className="mt-4 space-y-3">
-              {allUserChallenges.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-400">No challenges yet</p>
-                </div>
-              ) : (
-                allUserChallenges.map((challenge) => (
-                  <div key={challenge.id} className="p-4 bg-gray-700 rounded-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-2xl">{challenge.icon}</span>
-                        <div>
-                          <p className="text-white font-medium">{challenge.game} {challenge.type}</p>
-                          <p className="text-sm text-gray-400">ID: {challenge.challengeId}</p>
+            <TabsContent value="arena" className="mt-4 space-y-4">
+              {/* Created Challenges */}
+              <div>
+                <h4 className="text-white font-medium mb-2 flex items-center">
+                  <Target className="w-4 h-4 mr-2 text-orange-400" />
+                  Created Challenges ({userChallenges.length})
+                </h4>
+                <div className="space-y-2">
+                  {userChallenges.length === 0 ? (
+                    <p className="text-gray-400 text-center py-4">No challenges created yet</p>
+                  ) : (
+                    userChallenges.map((challenge) => (
+                      <div key={challenge.id} className="p-3 bg-gray-700 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-white font-medium">{challenge.game} {challenge.type}</p>
+                            <p className="text-sm text-gray-400">ID: {challenge.challengeId}</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge className={challenge.status === 'open' ? 'bg-yellow-600' : 'bg-green-600'}>
+                              {challenge.status}
+                            </Badge>
+                            <span className="text-green-400 font-medium text-sm">₹{challenge.entryPrices[0]?.price || 0}</span>
+                          </div>
                         </div>
                       </div>
-                      <Badge 
-                        variant="outline" 
-                        className={challenge.status === 'pending' ? 'border-yellow-400 text-yellow-400' : 'border-green-400 text-green-400'}
-                      >
-                        {challenge.status}
-                      </Badge>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-gray-400">Created {challenge.createdAt}</span>
-                      <span className="text-green-400 font-medium">
-                        Entry: ₹{challenge.entryPrices[0]?.price || 0}
-                      </span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </TabsContent>
+                    ))
+                  )}
+                </div>
+              </div>
 
-            <TabsContent value="matches" className="mt-4 space-y-4">
-              {/* Upcoming Tournaments */}
-              {upcomingTournaments.length > 0 && (
-                <div>
-                  <h4 className="text-white font-medium mb-2 flex items-center">
-                    <Calendar className="w-4 h-4 mr-2 text-blue-400" />
-                    Upcoming ({upcomingTournaments.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {upcomingTournaments.map((tournament) => (
+              {/* Accepted Challenges */}
+              <div>
+                <h4 className="text-white font-medium mb-2 flex items-center">
+                  <GamepadIcon className="w-4 h-4 mr-2 text-green-400" />
+                  Accepted Challenges ({userJoinedChallenges.length})
+                </h4>
+                <div className="space-y-2">
+                  {userJoinedChallenges.length === 0 ? (
+                    <p className="text-gray-400 text-center py-4">No challenges accepted yet</p>
+                  ) : (
+                    userJoinedChallenges.map((challenge) => (
+                      <div key={challenge.id} className="p-3 bg-gray-700 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-white font-medium">{challenge.game} {challenge.type}</p>
+                            <p className="text-sm text-gray-400">vs {challenge.creator}</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Badge className="bg-blue-600">Joined</Badge>
+                            <span className="text-green-400 font-medium text-sm">₹{challenge.entryPrices[0]?.price || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Registered Tournaments */}
+              <div>
+                <h4 className="text-white font-medium mb-2 flex items-center">
+                  <Calendar className="w-4 h-4 mr-2 text-blue-400" />
+                  Registered Tournaments ({userTournaments.length})
+                </h4>
+                <div className="space-y-2">
+                  {userTournaments.length === 0 ? (
+                    <p className="text-gray-400 text-center py-4">No tournaments registered</p>
+                  ) : (
+                    userTournaments.map((tournament) => (
                       <div key={tournament.id} className="p-3 bg-gray-700 rounded-lg">
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-white font-medium">{tournament.name}</p>
                             <p className="text-sm text-gray-400">{tournament.game} • {tournament.totalSlots} slots</p>
                           </div>
-                          <Badge className="bg-blue-600">Registered</Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Ongoing Tournaments */}
-              {ongoingTournaments.length > 0 && (
-                <div>
-                  <h4 className="text-white font-medium mb-2 flex items-center">
-                    <Trophy className="w-4 h-4 mr-2 text-green-400" />
-                    Ongoing ({ongoingTournaments.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {ongoingTournaments.map((tournament) => (
-                      <div key={tournament.id} className="p-3 bg-gray-700 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white font-medium">{tournament.name}</p>
-                            <p className="text-sm text-gray-400">Group Stage • Room ID: Available</p>
-                          </div>
-                          <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                            View Match
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Completed Tournaments */}
-              {completedTournaments.length > 0 && (
-                <div>
-                  <h4 className="text-white font-medium mb-2 flex items-center">
-                    <Star className="w-4 h-4 mr-2 text-purple-400" />
-                    Completed ({completedTournaments.length})
-                  </h4>
-                  <div className="space-y-2">
-                    {completedTournaments.map((tournament) => (
-                      <div key={tournament.id} className="p-3 bg-gray-700 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-white font-medium">{tournament.name}</p>
-                            <p className="text-sm text-gray-400">Finished • Rank: #12</p>
-                          </div>
-                          <Badge variant="outline" className="border-gray-500 text-gray-400">
-                            Completed
+                          <Badge className={
+                            tournament.status === 'open' ? 'bg-blue-600' :
+                            tournament.status === 'live' ? 'bg-green-600' : 'bg-gray-600'
+                          }>
+                            {tournament.status}
                           </Badge>
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    ))
+                  )}
                 </div>
-              )}
-
-              {userTournaments.length === 0 && (
-                <div className="text-center py-8">
-                  <p className="text-gray-400">No tournaments joined yet</p>
-                </div>
-              )}
+              </div>
             </TabsContent>
 
             <TabsContent value="teams" className="space-y-4">

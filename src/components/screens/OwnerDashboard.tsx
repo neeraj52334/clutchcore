@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Crown, Users, Shield, Settings, ArrowLeft, Plus, Search, Check, X, LogOut } from 'lucide-react';
+import { Crown, Users, Shield, Settings, ArrowLeft, Plus, Search, Check, X, LogOut, Target, Trophy, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
@@ -22,7 +22,7 @@ interface RoleAssignment {
 
 const OwnerDashboard = ({ onBack }: OwnerDashboardProps) => {
   const { logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<'overview' | 'roles'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'challenges' | 'roles'>('overview');
   const [showRoleAssignment, setShowRoleAssignment] = useState(false);
   const [roleForm, setRoleForm] = useState({
     identifier: '',
@@ -133,6 +133,7 @@ const OwnerDashboard = ({ onBack }: OwnerDashboardProps) => {
           <div className="flex space-x-1">
             {[
               { id: 'overview', label: 'Overview', icon: Settings },
+              { id: 'challenges', label: 'Challenges', icon: Target },
               { id: 'roles', label: 'Role Management', icon: Shield }
             ].map((tab) => (
               <Button
@@ -272,6 +273,107 @@ const OwnerDashboard = ({ onBack }: OwnerDashboardProps) => {
                 )}
               </CardContent>
             </Card>
+          </>
+        )}
+
+        {activeTab === 'challenges' && (
+          <>
+            {/* Challenge Management - Similar to P-Host interface */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold text-white flex items-center">
+                  <Target className="w-6 h-6 mr-2 text-orange-400" />
+                  Challenge Management
+                </h2>
+                <Badge className="bg-orange-600 text-white">
+                  Admin Access
+                </Badge>
+              </div>
+
+              {/* Challenge Stats */}
+              <div className="grid grid-cols-3 gap-4">
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold text-yellow-400">12</p>
+                    <p className="text-sm text-gray-400">Live Challenges</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold text-green-400">45</p>
+                    <p className="text-sm text-gray-400">Today's Challenges</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-gray-800 border-gray-700">
+                  <CardContent className="p-4 text-center">
+                    <p className="text-2xl font-bold text-blue-400">₹25,400</p>
+                    <p className="text-sm text-gray-400">Today's Revenue</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Recent Live Challenges */}
+              <Card className="bg-gray-800 border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white">Live Challenges (Accepted Challenges)</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {/* Mock live challenges data */}
+                  {[
+                    {
+                      id: 1,
+                      challengeId: 'CH_VL_001',
+                      game: 'VALORANT',
+                      creator: 'SkillzMaster',
+                      opponent: 'ProGamer99',
+                      entryFee: 200,
+                      status: 'live'
+                    },
+                    {
+                      id: 2,
+                      challengeId: 'CH_FF_045',
+                      game: 'Free Fire',
+                      creator: 'FireKing',
+                      opponent: 'GameMaster',
+                      entryFee: 150,
+                      status: 'live'
+                    }
+                  ].map((challenge) => (
+                    <div key={challenge.id} className="p-4 bg-gray-700 rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-3">
+                          <Badge variant="outline" className="text-blue-400 border-blue-400">
+                            {challenge.game}
+                          </Badge>
+                          <Badge className="bg-green-600">LIVE</Badge>
+                        </div>
+                        <span className="text-green-400 font-medium">₹{challenge.entryFee}</span>
+                      </div>
+                      
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Challenge ID:</span>
+                          <span className="text-white font-mono">{challenge.challengeId}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Players:</span>
+                          <span className="text-white">{challenge.creator} vs {challenge.opponent}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex space-x-2 mt-3">
+                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 flex-1">
+                          Monitor Chat
+                        </Button>
+                        <Button size="sm" className="bg-orange-600 hover:bg-orange-700 flex-1">
+                          Declare Winner
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </CardContent>
+              </Card>
+            </div>
           </>
         )}
 

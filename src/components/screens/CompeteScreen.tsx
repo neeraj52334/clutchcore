@@ -566,9 +566,12 @@ const CompeteScreen = () => {
       )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-gray-800">
+        <TabsList className="grid w-full grid-cols-3 bg-gray-800">
           <TabsTrigger value="browse" className="text-white data-[state=active]:bg-blue-600">
             Browse Challenges
+          </TabsTrigger>
+          <TabsTrigger value="challenges" className="text-white data-[state=active]:bg-blue-600">
+            Challenges
           </TabsTrigger>
           <TabsTrigger value="tournaments" className="text-white data-[state=active]:bg-blue-600">
             Tournaments
@@ -689,6 +692,84 @@ const CompeteScreen = () => {
                 <p className="text-gray-400">
                   No challenges available for the selected game filter.
                 </p>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="challenges" className="space-y-4">
+          {/* Available Challenges */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-white">All Challenges</h3>
+              <Button onClick={() => setShowCreateForm(true)} className="bg-orange-600 hover:bg-orange-700">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Challenge
+              </Button>
+            </div>
+
+            {/* Show all challenges from database/context */}
+            {challenges.map((challenge) => (
+              <Card key={challenge.id} className="bg-gray-800 border-gray-700 cursor-pointer hover:bg-gray-750 transition-colors">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="w-10 h-10">
+                        <AvatarFallback className="bg-blue-600 text-white">
+                          {challenge.creator[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="text-white font-medium">{challenge.creator}</p>
+                        <p className="text-sm text-gray-400">{challenge.timePosted || challenge.createdAt}</p>
+                      </div>
+                    </div>
+                    <Badge className={
+                      challenge.status === 'pending' || challenge.status === 'open' ? 'bg-green-600' : 
+                      challenge.status === 'accepted' ? 'bg-blue-600' : 'bg-gray-600'
+                    }>
+                      {challenge.status === 'pending' || challenge.status === 'open' ? 'Open' : 
+                       challenge.status === 'accepted' ? 'Live' : challenge.status}
+                    </Badge>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <Badge variant="outline" className="text-blue-400 border-blue-400">
+                          {challenge.game}
+                        </Badge>
+                        <span className="text-gray-400 text-sm">{challenge.type}</span>
+                      </div>
+                      <span className="text-green-400 font-medium">₹{challenge.entryPrices[0]?.price || 0}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-400">Challenge ID: {challenge.challengeId}</span>
+                      {(challenge.status === 'pending' || challenge.status === 'open') && challenge.creator !== user?.username && (
+                        <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
+                          Accept Challenge
+                        </Button>
+                      )}
+                      {challenge.status === 'accepted' && (challenge.creator === user?.username || challenge.opponent === user?.username) && (
+                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                          View Details
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+
+            {challenges.length === 0 && (
+              <div className="text-center py-8 border-2 border-dashed border-gray-600 rounded-lg">
+                <Target className="w-12 h-12 text-gray-600 mx-auto mb-2" />
+                <p className="text-gray-400 mb-4">No challenges available yet!</p>
+                <Button onClick={() => setShowCreateForm(true)} className="bg-orange-600 hover:bg-orange-700">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Your First Challenge
+                </Button>
               </div>
             )}
           </div>

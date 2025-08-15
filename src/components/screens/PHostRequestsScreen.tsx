@@ -93,7 +93,7 @@ const PHostRequestsScreen = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-white flex items-center">
           <Shield className="w-7 h-7 mr-2 text-green-400" />
-          P-Host Requests
+          P-Host Challenges
         </h1>
         <Badge className="bg-blue-600 text-white">
           {pendingRequests.length} Pending
@@ -103,7 +103,7 @@ const PHostRequestsScreen = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-3 bg-gray-800">
           <TabsTrigger value="pending" className="text-white data-[state=active]:bg-blue-600">
-            Pending ({pendingRequests.length})
+            Challenges ({pendingRequests.length})
           </TabsTrigger>
           <TabsTrigger value="accepted" className="text-white data-[state=active]:bg-blue-600">
             Active ({acceptedRequests.length})
